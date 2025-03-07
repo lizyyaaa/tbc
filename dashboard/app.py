@@ -53,6 +53,7 @@ if uploaded_file is not None:
                 persentase_kelayakan = (total_skor / max_skor) * 100 if max_skor > 0 else 0
                 skor.append(persentase_kelayakan)
             df["Skor Kelayakan"] = skor
+            df["Label"] = df["Skor Kelayakan"].apply(lambda x: "Layak" if x >= 70 else "Tidak Layak")
             return df
         
         # Definisi bobot untuk setiap kategori
@@ -66,38 +67,23 @@ if uploaded_file is not None:
             "pencahayaan": {"Terang": 5, "Tidak Terang": 1}
         }
 
-        bobot_sanitasi = {
-            "sarana_air_bersih": {"Ada,milik sendiri & memenuhi syarat": 5, "Tidak Ada": 1},
-            "jamban": {"Ada, leher angsa": 5, "Tidak Ada": 1},
-            "sarana_pembuangan_air_limbah": {"Dialirkan ke saluran kota": 5, "Tidak ada": 1},
-            "sarana_pembuangan_sampah": {"Ada, kedap air": 5, "Tidak Ada": 1},
-            "sampah": {"Petugas": 5, "Sungai": 1}
-        }
-
-        bobot_perilaku = {
-            "perilaku_merokok": {"Tidak": 5, "Ya": 1},
-            "anggota_keluarga_merokok": {"Tidak": 5, "Ya": 1},
-            "membuka_jendela_kamar_tidur": {"Setiap hari": 5, "Tidak pernah": 1},
-            "membersihkan_rumah": {"Setiap hari": 5, "Tidak pernah": 1},
-            "membuang_tinja": {"Setiap hari ke jamban": 5, "Sembarang": 1},
-            "membuang_sampah": {"Dikelola baik": 5, "Sungai": 1},
-            "kebiasaan_ctps": {"CTPS setiap aktivitas": 5, "Tidak pernah CTPS": 1}
-        }
-        
         # Menghitung skor kelayakan
         df_rumah = hitung_skor(df_cleaned, kategori_rumah, bobot_rumah)
-        df_sanitasi = hitung_skor(df_cleaned, kategori_sanitasi, bobot_sanitasi)
-        df_perilaku = hitung_skor(df_cleaned, kategori_perilaku, bobot_perilaku)
         
         # Menampilkan hasil
         st.subheader("🏠 Skor Kelayakan Rumah")
         st.write(df_rumah.head())
-
-        st.subheader("🚰 Skor Kelayakan Sanitasi")
-        st.write(df_sanitasi.head())
-
-        st.subheader("🛡️ Skor Kelayakan Perilaku")
-        st.write(df_perilaku.head())
+        
+        # Persentase Tidak Layak
+        persentase_tidak_layak = (df_rumah["Label"].value_counts().get("Tidak Layak", 0) / len(df_rumah)) * 100
+        st.subheader("📊 Persentase Rumah Tidak Layak")
+        st.metric("Rumah Tidak Layak", f"{persentase_tidak_layak:.2f}%")
+        
+        # Visualisasi
+        st.subheader("📊 Visualisasi Skor Kelayakan Rumah")
+        fig, ax = plt.subplots()
+        sns.histplot(df_rumah["Skor Kelayakan"], bins=20, kde=True, ax=ax)
+        st.pyplot(fig)
         
     except Exception as e:
         st.error(f"Terjadi kesalahan: {e}")
