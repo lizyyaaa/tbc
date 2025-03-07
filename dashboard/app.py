@@ -69,20 +69,44 @@ if uploaded_file is not None:
 
         # Menghitung skor kelayakan
         df_rumah = hitung_skor(df_cleaned, kategori_rumah, bobot_rumah)
+        df_sanitasi = hitung_skor(df_cleaned, kategori_sanitasi, bobot_rumah)
+        df_perilaku = hitung_skor(df_cleaned, kategori_perilaku, bobot_rumah)
         
         # Menampilkan hasil
         st.subheader("🏠 Skor Kelayakan Rumah")
         st.write(df_rumah.head())
         
         # Persentase Tidak Layak
-        persentase_tidak_layak = (df_rumah["Label"].value_counts().get("Tidak Layak", 0) / len(df_rumah)) * 100
-        st.subheader("📊 Persentase Rumah Tidak Layak")
-        st.metric("Rumah Tidak Layak", f"{persentase_tidak_layak:.2f}%")
+        persentase_tidak_layak_rumah = (df_rumah["Label"].value_counts().get("Tidak Layak", 0) / len(df_rumah)) * 100
+        persentase_tidak_layak_sanitasi = (df_sanitasi["Label"].value_counts().get("Tidak Layak", 0) / len(df_sanitasi)) * 100
+        persentase_tidak_baik_perilaku = (df_perilaku["Label"].value_counts().get("Tidak Layak", 0) / len(df_perilaku)) * 100
         
-        # Visualisasi
-        st.subheader("📊 Visualisasi Skor Kelayakan Rumah")
-        fig, ax = plt.subplots()
-        sns.histplot(df_rumah["Skor Kelayakan"], bins=20, kde=True, ax=ax)
+        # Visualisasi Persentase Tidak Layak
+        st.subheader("📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
+        kategori = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
+        persentase = [persentase_tidak_layak_rumah, persentase_tidak_layak_sanitasi, persentase_tidak_baik_perilaku]
+        
+        # Mengurutkan data
+        sorted_indices = sorted(range(len(persentase)), key=lambda i: persentase[i], reverse=True)
+        kategori = [kategori[i] for i in sorted_indices]
+        persentase = [persentase[i] for i in sorted_indices]
+        
+        # Membuat bar chart
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.bar(kategori, persentase, color=['red', 'orange', 'blue'])
+        
+        # Menambahkan label
+        ax.set_xlabel("Kategori")
+        ax.set_ylabel("Persentase (%)")
+        ax.set_title("Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
+        ax.set_ylim(0, 100)
+        ax.grid(axis="y", linestyle="--", alpha=0.7)
+        
+        # Menampilkan nilai di atas batang
+        for i, v in enumerate(persentase):
+            ax.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
+        
+        # Menampilkan grafik
         st.pyplot(fig)
         
     except Exception as e:
