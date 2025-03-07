@@ -67,48 +67,47 @@ if uploaded_file is not None:
             "pencahayaan": {"Terang": 5, "Tidak Terang": 1}
         }
 
+        bobot_sanitasi = {
+            "sarana_air_bersih": {"Ada,milik sendiri & memenuhi syarat": 5, "Tidak Ada": 1},
+            "jamban": {"Ada, leher angsa": 5, "Tidak Ada": 1},
+            "sarana_pembuangan_air_limbah": {"Dialirkan ke saluran kota": 5, "Tidak ada": 1},
+            "sarana_pembuangan_sampah": {"Ada, kedap air": 5, "Tidak Ada": 1},
+            "sampah": {"Petugas": 5, "Sungai": 1}
+        }
+
+        bobot_perilaku = {
+            "perilaku_merokok": {"Tidak": 5, "Ya": 1},
+            "anggota_keluarga_merokok": {"Tidak": 5, "Ya": 1},
+            "membuka_jendela_kamar_tidur": {"Setiap hari": 5, "Tidak pernah": 1},
+            "membersihkan_rumah": {"Setiap hari": 5, "Tidak pernah": 1},
+            "membuang_tinja": {"Setiap hari ke jamban": 5, "Sembarang": 1},
+            "membuang_sampah": {"Dikelola baik": 5, "Sungai": 1},
+            "kebiasaan_ctps": {"CTPS setiap aktivitas": 5, "Tidak pernah CTPS": 1}
+        }
+        
         # Menghitung skor kelayakan
         df_rumah = hitung_skor(df_cleaned, kategori_rumah, bobot_rumah)
-        df_sanitasi = hitung_skor(df_cleaned, kategori_sanitasi, bobot_rumah)
-        df_perilaku = hitung_skor(df_cleaned, kategori_perilaku, bobot_rumah)
+        df_sanitasi = hitung_skor(df_cleaned, kategori_sanitasi, bobot_sanitasi)
+        df_perilaku = hitung_skor(df_cleaned, kategori_perilaku, bobot_perilaku)
         
         # Menampilkan hasil
-        st.subheader("🏠 Skor Kelayakan Rumah")
-        st.write(df_rumah.head())
-        
-        # Persentase Tidak Layak
-        persentase_tidak_layak_rumah = (df_rumah["Label"].value_counts().get("Tidak Layak", 0) / len(df_rumah)) * 100
-        persentase_tidak_layak_sanitasi = (df_sanitasi["Label"].value_counts().get("Tidak Layak", 0) / len(df_sanitasi)) * 100
-        persentase_tidak_baik_perilaku = (df_perilaku["Label"].value_counts().get("Tidak Layak", 0) / len(df_perilaku)) * 100
-        
-        # Visualisasi Persentase Tidak Layak
-        st.subheader("📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
-        kategori = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
-        persentase = [persentase_tidak_layak_rumah, persentase_tidak_layak_sanitasi, persentase_tidak_baik_perilaku]
-        
-        # Mengurutkan data
-        sorted_indices = sorted(range(len(persentase)), key=lambda i: persentase[i], reverse=True)
-        kategori = [kategori[i] for i in sorted_indices]
-        persentase = [persentase[i] for i in sorted_indices]
-        
-        # Membuat bar chart
+        st.subheader("📊 Perbandingan Kategori Tidak Layak")
         fig, ax = plt.subplots(figsize=(8, 5))
+        kategori = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
+        persentase = [
+            (df_rumah["Label"].value_counts().get("Tidak Layak", 0) / len(df_rumah)) * 100,
+            (df_sanitasi["Label"].value_counts().get("Tidak Layak", 0) / len(df_sanitasi)) * 100,
+            (df_perilaku["Label"].value_counts().get("Tidak Layak", 0) / len(df_perilaku)) * 100
+        ]
         ax.bar(kategori, persentase, color=['red', 'orange', 'blue'])
-        
-        # Menambahkan label
         ax.set_xlabel("Kategori")
         ax.set_ylabel("Persentase (%)")
         ax.set_title("Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
         ax.set_ylim(0, 100)
         ax.grid(axis="y", linestyle="--", alpha=0.7)
-        
-        # Menampilkan nilai di atas batang
         for i, v in enumerate(persentase):
             ax.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
-        
-        # Menampilkan grafik
         st.pyplot(fig)
-        
     except Exception as e:
         st.error(f"Terjadi kesalahan: {e}")
 else:
