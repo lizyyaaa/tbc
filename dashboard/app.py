@@ -32,13 +32,13 @@ if uploaded_file is not None:
         st.write(df_cleaned.head())
         
         # Kategori pertanyaan
-        kategori_rumah = ['status_rumah', 'langit_langit', 'lantai', 'dinding', 'jendela_kamar_tidur',
+        kategori_rumah = ['langit_langit', 'lantai', 'dinding', 'jendela_kamar_tidur',
                           'jendela_ruang_keluarga', 'ventilasi', 'lubang_asap_dapur', 'pencahayaan']
         kategori_sanitasi = ['sarana_air_bersih', 'jamban', 'sarana_pembuangan_air_limbah', 
                              'sarana_pembuangan_sampah', 'sampah']
         kategori_perilaku = ['perilaku_merokok', 'anggota_keluarga_merokok', 'membuka_jendela_kamar_tidur',
                              'membuka_jendela_ruang_keluarga', 'membersihkan_rumah', 'membuang_tinja',
-                             'membuang_sampah', 'kebiasaan_ctps', 'memiliki_hewan_ternak']
+                             'membuang_sampah', 'kebiasaan_ctps']
         
         # Fungsi hitung skor kelayakan
         def hitung_skor(df, kategori):
