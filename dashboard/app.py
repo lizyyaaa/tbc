@@ -502,6 +502,7 @@ elif nav == "📈 Visualisasi":
                 plt.xlim(0, df_detail['Jumlah'].max() + 5)
                 st.pyplot(plt.gcf())
                 plt.clf()
+                tampilkan_dan_download()
 
 
             
