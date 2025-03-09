@@ -75,6 +75,24 @@ if nav == "🏠 Home":
     if not df_csv.empty and st.session_state["data"].empty:
         st.session_state["data"] = df_csv.copy()
         st.info("Data CSV telah disimpan ke data gabungan.")
+    # Daftar urutan kolom yang diinginkan
+    fields_order = [
+        "puskesmas", "pasien", "age", "gender", "faskes", "city", "regency",
+        "kelurahan", "type_tb", "date_start", "tgl_kunjungan", "status_hamil",
+        "penyakit", "pekerjaan", "tempat_kerja", "nama_kepala_keluarga",
+        "pekerjaan_kepala_keluarga", "total_pendapatan_keluarga_per_bulan",
+        "pola_asuh", "status_pernikahan", "status_pernikahan_orang_tua",
+        "jumlah_anggota_keluarga", "kepemilikan_jkn", "perilaku_merokok",
+        "anggota_keluarga_merokok", "mendapatkan_bantuan", "status_imunisasi",
+        "status_gizi", "status_rumah", "luas_rumah", "tipe_rumah",
+        "langit_langit", "lantai", "dinding", "jendela_kamar_tidur",
+        "jendela_ruang_keluarga", "ventilasi", "lubang_asap_dapur",
+        "pencahayaan", "sarana_air_bersih", "jamban",
+        "sarana_pembuangan_air_limbah", "sarana_pembuangan_sampah", "sampah",
+        "membuka_jendela_kamar_tidur", "membuka_jendela_ruang_keluarga",
+        "membersihkan_rumah", "membuang_tinja", "membuang_sampah",
+        "kebiasaan_ctps", "memiliki_hewan_ternak", "kandang_hewan"
+    ]
 
     # Option dictionary untuk input data tambahan (tanpa kolom umur dan tanggal)
     option_dict = {
