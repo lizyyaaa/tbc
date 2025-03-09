@@ -397,7 +397,7 @@ elif nav == "📈 Visualisasi":
                 "🩺 Jumlah Pasien per Puskesmas",
                 "📅 Tren Date Start Pasien",
                 "📊 Distribusi Usia",
-                "🟢 Status Gizi dan Imunisas"
+                "🟢 Status Gizi dan Imunisasi"
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
