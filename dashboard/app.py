@@ -452,7 +452,7 @@ elif nav == "📈 Visualisasi":
                     plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
                 tampilkan_dan_download()
             
-            elif pilihan == "🏠 Rumah Layak & Tidak Layak (Chart + Detail)":
+           elif pilihan == "🏠 Rumah Layak & Tidak Layak (Chart + Detail)":
                 st.subheader("🏠 Rumah Layak & Tidak Layak")
                 # --- Pie Chart Rumah Layak vs Tidak Layak ---
                 labels = ["Layak", "Tidak Layak"]
@@ -473,7 +473,9 @@ elif nav == "📈 Visualisasi":
                 
                 # --- Detail: Bar Chart Kategori Rumah Tidak Layak ---
                 st.markdown("#### Detail Kategori Rumah Tidak Layak")
-                # Jika tidak ada kolom 'kategori_rumah', langsung gunakan filtering berdasarkan kolom terkait
+                # Pastikan total_rumah didefinisikan berdasarkan df yang digunakan
+                total_rumah = len(df)
+                # Hitung jumlah rumah per sub kategori langsung dari kolom terkait
                 kategori_rumah_detail = {
                     "Luas ventilasi ≤ 10% dari luas lantai": df['ventilasi'].str.contains('luas ventilasi < 10%', case=False, na=False).sum(),
                     "Pencahayaan kurang terang, kurang jelas untuk membaca normal": df['pencahayaan'].str.contains('kurang terang', case=False, na=False).sum(),
@@ -501,6 +503,7 @@ elif nav == "📈 Visualisasi":
                 plt.xlim(0, df_detail['Jumlah'].max() + 5)
                 st.pyplot(plt.gcf())
                 plt.clf()
+
 
             
             elif pilihan == "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)":
