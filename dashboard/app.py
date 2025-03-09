@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from io import BytesIO
 from datetime import datetime
 
 # Atur tema Seaborn
@@ -15,19 +14,18 @@ def display_label(col_name: str) -> str:
 # Inisialisasi session_state untuk data gabungan jika belum ada
 if "data" not in st.session_state:
     st.session_state["data"] = pd.DataFrame()
-    
- # Mempercantik sidebar dengan logo dan judul menggunakan fungsi bawaan Streamlit
- logo_url = "https://raw.githubusercontent.com/lizyyaaa/tbc/main/dashboard/download%20(1).png"  # Pastikan URL sudah dalam bentuk raw
- st.sidebar.image(logo_url, use_container_width=True)
- st.sidebar.title("Dinas Kesehatan")
- st.sidebar.subheader("Kota Semarang")
- st.sidebar.markdown("---")
 
-# Navigasi dengan tampilan tombol yang diperindah
+# Sidebar: tampilkan logo dan judul menggunakan widget bawaan
+logo_url = "https://raw.githubusercontent.com/lizyyaaa/tbc/main/dashboard/download%20(1).png"  # Pastikan URL sudah raw
+st.sidebar.image(logo_url, use_container_width=True)
+st.sidebar.title("🏥 Dinas Kesehatan")
+st.sidebar.subheader("Kota Semarang")
+st.sidebar.markdown("---")
+
+# Widget navigasi di sidebar dengan emoji
 nav = st.sidebar.radio("🔽 Pilih Halaman", ["🏠 Home", "📈 Visualisasi"])
 
-
-# Selanjutnya kode Home dan Visualisasi bisa disertakan di bawah ini...
+st.write("Halaman yang dipilih:", nav)
 
 # Fungsi download chart
 def download_chart():
