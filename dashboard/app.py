@@ -4,26 +4,48 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 
-# Atur tema Seaborn
+# 1) Nonaktifkan atau atur tema bawaan Streamlit agar teks tidak berwarna biru
+st.set_page_config(
+    page_title="Dashboard TBC",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    theme={
+        "primaryColor": "#FF4B4B",  # warna utama (contoh merah)
+        "backgroundColor": "#FFFFFF",
+        "secondaryBackgroundColor": "#F0F2F6",
+        "textColor": "#000000",     # teks hitam
+        "font": "sans serif"
+    }
+)
+
+# 2) Atur tema Seaborn
 sns.set_theme(style="whitegrid")
 
-# Fungsi untuk menampilkan label kolom tanpa underscore
-def display_label(col_name: str) -> str:
-    return " ".join(word.capitalize() for word in col_name.split("_"))
-
-# Inisialisasi session_state untuk data gabungan jika belum ada
+# 3) Inisialisasi session_state untuk data gabungan jika belum ada
 if "data" not in st.session_state:
     st.session_state["data"] = pd.DataFrame()
 
-# Sidebar: tampilkan logo dan judul menggunakan widget bawaan
-logo_url = "https://raw.githubusercontent.com/lizyyaaa/tbc/main/dashboard/download%20(1).png"  # Pastikan URL sudah raw
+# 4) Fungsi untuk menampilkan label kolom tanpa underscore
+def display_label(col_name: str) -> str:
+    return " ".join(word.capitalize() for word in col_name.split("_"))
+
+# 5) Tampilkan elemen di sidebar
+logo_url = "https://raw.githubusercontent.com/lizyyaaa/tbc/main/dashboard/download%20(1).png" 
 st.sidebar.image(logo_url, use_container_width=True)
+
+# Title dan Subheader di sidebar
 st.sidebar.title("🏥 Dinas Kesehatan")
 st.sidebar.subheader("Kota Semarang")
 st.sidebar.markdown("---")
 
-# Widget navigasi di sidebar dengan emoji
-nav = st.sidebar.radio("🔽 Pilih Halaman", ["🏠 Home", "📈 Visualisasi"])
+# Contoh info box untuk menambah keterangan di sidebar
+st.sidebar.info("Silakan pilih halaman di bawah ini.")
+
+# 6) Navigasi menggunakan radio button di sidebar dengan emoji
+nav = st.sidebar.radio(
+    "🔽 Pilih Halaman", 
+    ["🏠 Home", "📈 Visualisasi"]
+)
 
 # Fungsi download chart
 def download_chart():
