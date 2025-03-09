@@ -643,8 +643,8 @@ elif nav == "📈 Visualisasi":
                 for index, (value, percent) in enumerate(zip(puskesmas_counts["jumlah_pasien"], puskesmas_counts["persentase"])):
                     plt.text(value + 1, index, f"{value} ({percent:.1f}%)", va='center', fontsize=10, color="black")
                 tampilkan_dan_download()
-                
-              elif pilihan == "📅 Tren Date Start Pasien":
+            
+            elif pilihan == "📅 Tren Date Start Pasien":
                 st.subheader("📅 Tren Date Start Pasien")
                 # Pastikan kolom date_start dalam format datetime
                 df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
