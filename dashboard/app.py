@@ -44,7 +44,8 @@ def download_chart():
         label="⬇️ Download Gambar",
         data=buffer,
         file_name="chart.png",
-        mime="image/png"
+        mime="image/png",
+        key="download_chart_" + str(datetime.now().timestamp())  # key unik
     )
     buffer.close()
 
