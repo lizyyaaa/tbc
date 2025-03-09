@@ -18,7 +18,7 @@ if "data" not in st.session_state:
 
 # Mempercantik sidebar dengan logo
 logo_url = "https://upload.wikimedia.org/wikipedia/commons/d/dc/Health_Dinas_Kesehatan_logo.png"  # Ganti dengan URL logo yang diinginkan
-st.sidebar.image(logo_url, use_column_width=True)
+st.sidebar.image(logo_url, use_container_width=True)
 st.sidebar.markdown("---")
 
 # Navigasi menggunakan radio button di sidebar
@@ -62,12 +62,12 @@ if nav == "Home":
     else:
         df_csv = pd.DataFrame()
 
-    # Jika file CSV diupload dan data di session_state kosong, simpan data CSV ke session_state
+    # Jika file CSV diupload dan session_state kosong, simpan data CSV ke session_state
     if not df_csv.empty and st.session_state["data"].empty:
         st.session_state["data"] = df_csv.copy()
         st.info("Data CSV telah disimpan ke data gabungan.")
 
-    # Option dictionary untuk input data tambahan (kecuali 'age' karena akan ditambahkan secara terpisah)
+    # Option dictionary untuk input data tambahan (kecuali kolom umur, yang akan ditambahkan terpisah)
     option_dict = {
         "puskesmas": ['Puskesmas Kedungmundu', 'Puskesmas Sekaran', 'Puskesmas Karangdoro', 'Puskesmas Rowosari', 
                       'Puskesmas Bandarharjo', 'Puskesmas Pegandan', 'Puskesmas Mangkang', 'Puskesmas Candilama', 
@@ -96,7 +96,7 @@ if nav == "Home":
                       'Bulusan', 'Bugangan', 'Kebonagung', 'Bulustalan', 'Gisikdrono', 'Tambakharjo', 'Muktiharjo Lor', 
                       'Ngijo', 'Mijen', 'Wonolopo', 'Jabungan', 'Kuningan', 'Tlogomulyo', 'Banjardowo', 'Bubakan', 
                       'Gondoriyo', 'Bendan Duwur', 'Gajahmungkur', 'Bendan Ngisor', 'Purwodinatan', 'Kramas', 'Kudu', 
-                      'Mugassari', 'Penggaron Lor', 'Bangetayu Wetan', 'Bangunharjo', 'Kembangsari', 'Pandansari', 
+                      'Mugassari', 'Penggaron Lor', 'Bangetayu Wesan', 'Bangunharjo', 'Kembangsari', 'Pandansari', 
                       'Sekayu', 'Karangtempel', 'Gedawang', 'Karangkidul', 'Bojongsalaman', 'Trimulyo', 'Bangetayu Kulon', 
                       'Gebangsari', 'Jatibarang', 'Tambangan', 'Wonodri', 'Pudakpayung', 'Pedurungan Tengah', 'Candi', 
                       'Kranggan', 'Tlogosari Wetan', 'Tawangsari', 'Palebon', 'Mlatibaru', 'Tegalsari', 'Wonotingal', 
@@ -167,11 +167,10 @@ if nav == "Home":
         "kandang_hewan": []  # Kosong, bisa diisi teks
     }
     
-    # Tampilan form input data manual tambahan
     st.markdown("## Form Input Data Manual Tambahan")
     with st.form(key="manual_form"):
         input_manual = {}
-        # Untuk setiap kolom di option_dict, gunakan selectbox jika ada opsi
+        # Gunakan selectbox untuk kolom dengan opsi, dan text_input jika tidak ada opsi
         for col, options in option_dict.items():
             label = display_label(col)
             if options:
@@ -180,7 +179,7 @@ if nav == "Home":
                 input_manual[col] = st.text_input(f"{label}", value="")
         # Kolom 'pasien' sebagai text_input untuk ID atau keterangan
         input_manual["pasien"] = st.text_input("Pasien (ID atau keterangan)", value="")
-        # Tambahkan kolom umur ("age") menggunakan number_input
+        # Tambahkan kolom umur ("age") sebagai number_input
         input_manual["age"] = st.number_input("Age (Umur)", min_value=0, step=1, value=0)
         # Dua kolom tanggal: date_start dan tgl_kunjungan
         input_manual["date_start"] = st.text_input("Tanggal Start (YYYY-MM-DD)", 
@@ -572,7 +571,7 @@ elif nav == "Visualisasi":
                     plt.text(value + 1, idx, f"{value} rumah ({pct:.1f}%)", va='center', fontsize=11, color='black')
                 plt.xlabel("Jumlah Rumah", fontsize=12)
                 plt.ylabel("Kategori Sanitasi Tidak Layak", fontsize=12)
-                plt.title("Kategori Sanitasi Tidak Layak", fontsize=14, fontweight='bold')
+                plt.title("Kategori Sanitasi Tidak Layak", fontsize=14, fontweight="bold")
                 plt.xticks(fontsize=11)
                 plt.yticks(fontsize=11)
                 tampilkan_dan_download()
@@ -599,7 +598,7 @@ elif nav == "Visualisasi":
                     plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=11, color='black')
                 plt.xlabel("Jumlah Rumah", fontsize=12)
                 plt.ylabel("Kategori Perilaku Tidak Sehat", fontsize=12)
-                plt.title("Kategori Perilaku Tidak Sehat", fontsize=14, fontweight='bold')
+                plt.title("Kategori Perilaku Tidak Sehat", fontsize=14, fontweight="bold")
                 plt.xticks(fontsize=11)
                 plt.yticks(fontsize=11)
                 tampilkan_dan_download()
