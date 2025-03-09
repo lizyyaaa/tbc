@@ -1,39 +1,3 @@
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from io import BytesIO
-from datetime import datetime
-
-# Atur tema Seaborn
-sns.set_theme(style="whitegrid")
-
-# Inisialisasi session_state untuk data gabungan
-if "data" not in st.session_state:
-    st.session_state["data"] = pd.DataFrame()
-
-# Sidebar: Navigasi
-nav = st.sidebar.radio("Navigasi", ["Home", "Visualisasi"])
-
-# Fungsi download chart
-def download_chart():
-    buffer = BytesIO()
-    plt.savefig(buffer, format='png', bbox_inches='tight')
-    buffer.seek(0)
-    st.download_button(
-        label="⬇️ Download Gambar",
-        data=buffer,
-        file_name="chart.png",
-        mime="image/png"
-    )
-    buffer.close()
-
-# Fungsi untuk menampilkan chart dan download
-def tampilkan_dan_download():
-    st.pyplot(plt.gcf())
-    download_chart()
-    plt.clf()
-
 # ================================
 # Halaman Home: Input & Upload Data
 # ================================
@@ -52,6 +16,11 @@ if nav == "Home":
             df_csv = pd.DataFrame()
     else:
         df_csv = pd.DataFrame()
+
+    # Jika file CSV diupload dan session_state data masih kosong, simpan data CSV ke session_state
+    if not df_csv.empty and st.session_state["data"].empty:
+        st.session_state["data"] = df_csv.copy()
+        st.info("Data CSV telah disimpan ke data gabungan.")
 
     # Option dictionary untuk input data tambahan
     option_dict = {
@@ -107,9 +76,9 @@ if nav == "Home":
                 input_manual[col] = st.selectbox(f"{col}", options)
             else:
                 input_manual[col] = st.text_input(f"{col}", value="")
-        # Untuk kolom 'pasien', gunakan text_input agar bisa diisi ID atau keterangan lain.
+        # Kolom 'pasien' sebagai text_input (misal ID atau keterangan)
         input_manual["pasien"] = st.text_input("Pasien (ID atau keterangan)", value="")
-        # Tambahkan dua kolom tanggal: date_start dan tgl_kunjungan
+        # Dua kolom tanggal: date_start dan tgl_kunjungan
         input_manual["date_start"] = st.text_input("Tanggal Start (YYYY-MM-DD)", value=datetime.today().strftime("%Y-%m-%d"))
         input_manual["tgl_kunjungan"] = st.text_input("Tanggal Kunjungan (YYYY-MM-DD)", value=datetime.today().strftime("%Y-%m-%d"))
         submitted_manual = st.form_submit_button(label="Submit Data Manual Tambahan")
@@ -156,7 +125,7 @@ elif nav == "Visualisasi":
             df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
             df["year_month"] = df["date_start"].dt.to_period("M").astype(str)
         
-        # Definisi kategori untuk analisis skor (sesuaikan dengan data)
+        # Definisi kategori untuk analisis skor (sesuaikan jika perlu)
         kategori_rumah = [
             'langit_langit', 'lantai', 'dinding', 'jendela_kamar_tidur',
             'jendela_ruang_keluarga', 'ventilasi', 'lubang_asap_dapur', 'pencahayaan'
@@ -272,7 +241,7 @@ elif nav == "Visualisasi":
                 """
             )
 
-            # Visualisasi sesuai pilihan
+            # Visualisasi berdasarkan pilihan
             if pilihan == "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak":
                 st.subheader("📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
                 kategori_overall = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
