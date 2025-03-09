@@ -394,7 +394,8 @@ elif nav == "📈 Visualisasi":
                 "🏠 Rumah Layak & Tidak Layak (Chart + Detail)",
                 "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)",
                 "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)",
-                "🩺 Jumlah Pasien per Puskesmas" 
+                "🩺 Jumlah Pasien per Puskesmas",
+                "📅 Tren Date Start Pasien"
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
@@ -642,4 +643,32 @@ elif nav == "📈 Visualisasi":
                 for index, (value, percent) in enumerate(zip(puskesmas_counts["jumlah_pasien"], puskesmas_counts["persentase"])):
                     plt.text(value + 1, index, f"{value} ({percent:.1f}%)", va='center', fontsize=10, color="black")
                 tampilkan_dan_download()
+                
+              elif pilihan == "📅 Tren Date Start Pasien":
+                st.subheader("📅 Tren Date Start Pasien")
+                # Pastikan kolom date_start dalam format datetime
+                df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
+                
+                # Resampling data per bulan agar lebih rapi
+                df["year_month"] = df["date_start"].dt.to_period("M")  # Format YYYY-MM
+                date_counts = df.groupby("year_month")["pasien"].count().reset_index()
+                date_counts["year_month"] = date_counts["year_month"].astype(str)  # Konversi ke string untuk sumbu X
+            
+                plt.figure(figsize=(12, 6))
+                sns.lineplot(x="year_month", y="pasien", data=date_counts, marker="o", linestyle="-", color="royalblue")
+                
+                # Elemen visual
+                plt.title("Tren Date Start Pasien", fontsize=16, fontweight="bold", color="darkblue")
+                plt.xlabel("Bulan", fontsize=12, fontweight="bold")
+                plt.ylabel("Jumlah Pasien", fontsize=12, fontweight="bold")
+                plt.xticks(rotation=45)
+                plt.grid(axis="y", linestyle="--", alpha=0.6)
+                
+                # Tambahkan anotasi jumlah pasien pada tiap titik
+                for index, row in date_counts.iterrows():
+                    plt.text(row["year_month"], row["pasien"] + 2, f"{row['pasien']}", ha="center", fontsize=10, color="black")
+                
+                tampilkan_dan_download()
+
+            
             st.sidebar.success("Visualisasi selesai ditampilkan!")
