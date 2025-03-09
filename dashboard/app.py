@@ -25,8 +25,6 @@ st.sidebar.markdown("---")
 # Widget navigasi di sidebar dengan emoji
 nav = st.sidebar.radio("🔽 Pilih Halaman", ["🏠 Home", "📈 Visualisasi"])
 
-st.write("Halaman yang dipilih:", nav)
-
 # Fungsi download chart
 def download_chart():
     buffer = BytesIO()
@@ -49,7 +47,7 @@ def tampilkan_dan_download():
 # ================================
 # Halaman Home: Input & Upload Data
 # ================================
-if nav == "Home":
+if nav == "🏠 Home":
     st.title("🏠 Home - Input & Upload Data")
     st.markdown("### Upload file CSV dan masukkan data baru secara manual. Data yang diinput akan digabungkan dan ditampilkan.")
     
@@ -209,7 +207,7 @@ if nav == "Home":
 # ================================
 # Halaman Visualisasi
 # ================================
-elif nav == "Visualisasi":
+elif nav == "📈 Visualisasi":
     st.title("📈 Visualisasi Data")
     if st.session_state["data"].empty:
         st.warning("Data belum tersedia. Silakan upload file CSV atau input data manual di halaman Home.")
