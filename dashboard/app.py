@@ -25,10 +25,11 @@ st.sidebar.subheader("Kota Semarang")
 st.sidebar.markdown("---")
 
 # Contoh info box untuk menambah keterangan di sidebar
-st.sidebar.info("🔽 Silakan pilih halaman di bawah ini.")
+st.sidebar.info("Silakan pilih halaman di bawah ini.")
 
 # 6) Navigasi menggunakan radio button di sidebar dengan emoji
 nav = st.sidebar.radio(
+     "🔽 Pilih Halaman", 
     ["🏠 Home", "📈 Visualisasi"]
 )
 
