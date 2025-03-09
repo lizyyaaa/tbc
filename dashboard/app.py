@@ -710,14 +710,14 @@ elif nav == "📈 Visualisasi":
                     st.warning("Kolom 'status_gizi' tidak ditemukan di data.")  
                 else:  
                     # Grouping berdasarkan status imunisasi dan status gizi  
-                    imunisasi_gizi = df.groupby(["status_imunisasi", "status_gizi"]).size().reset_index(name="count")  
+                    imunisasi_gizi = df.groupby(["status_gizi", "status_imunisasi"]).size().reset_index(name="count")  
             
                     # Plot menggunakan Seaborn  
                     fig, ax = plt.subplots(figsize=(10, 5))  
-                    sns.barplot(x="status_imunisasi", y="count", hue="status_gizi", data=imunisasi_gizi, palette="pastel", ax=ax)  
-                    ax.set_xlabel("Status Imunisasi")  
+                    sns.barplot(x="status_gizi", y="count", hue="status_imunisasi", data=imunisasi_gizi, palette="pastel", ax=ax)  
+                    ax.set_xlabel("Status Gizi")  
                     ax.set_ylabel("Jumlah")  
-                    ax.set_title("Distribusi Status Imunisasi berdasarkan Status Gizi")  
+                    ax.set_title("Distribusi Status Gizi berdasarkan Status Imunisasi")  
                     plt.xticks(rotation=45)  
             
                     tampilkan_dan_download()
