@@ -22,8 +22,8 @@ logo_url = "https://raw.githubusercontent.com/lizyyaaa/tbc/main/dashboard/downlo
 st.sidebar.image(logo_url, use_container_width=True)
 
 # Title dan Subheader di sidebar
-st.sidebar.title("🏥 Dinas Kesehatan")
-st.sidebar.subheader("Kota Semarang")
+st.sidebar.title("🏥 Dinas Kesehatan Kota Semarang")
+st.sidebar.subheader("Bidang P2P")
 st.sidebar.markdown("---")
 
 # Contoh info box untuk menambah keterangan di sidebar
