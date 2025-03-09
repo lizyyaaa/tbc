@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 
-# Set Streamlit dan tema Seaborn
-st.set_option('deprecation.showPyplotGlobalUse', False)
+# Hapus atau komentari baris berikut jika terjadi error
+# st.set_option('deprecation.showPyplotGlobalUse', False)
+
 sns.set_theme(style="whitegrid")
 
 st.title("Analisis Data & Visualisasi Lengkap")
@@ -194,7 +195,7 @@ if filename:
         }
     }
     
-    # Hitung skor kelayakan untuk masing-masing kategori
+    # Hitung skor kelayakan
     df_rumah = hitung_skor(df_rumah, kategori_rumah, bobot_rumah)
     df_sanitasi = hitung_skor(df_sanitasi, kategori_sanitasi, bobot_sanitasi)
     df_perilaku = hitung_skor(df_perilaku, kategori_perilaku, bobot_perilaku)
@@ -208,7 +209,7 @@ if filename:
     df_sanitasi["Label"] = df_sanitasi["Skor Kelayakan"].apply(label_kelayakan)
     df_perilaku["Label"] = df_perilaku["Skor Kelayakan"].apply(label_kelayakan)
     
-    # Hitung persentase untuk tiap kategori
+    # Hitung persentase
     persentase_tidak_layak_rumah = (df_rumah[df_rumah["Label"] == "Tidak Layak"].shape[0] / df_rumah.shape[0]) * 100
     persentase_tidak_layak_sanitasi = (df_sanitasi[df_sanitasi["Label"] == "Tidak Layak"].shape[0] / df_sanitasi.shape[0]) * 100
     persentase_tidak_baik_perilaku = (df_perilaku[df_perilaku["Label"] == "Tidak Layak"].shape[0] / df_perilaku.shape[0]) * 100
@@ -261,7 +262,6 @@ if filename:
     st.subheader("Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
     kategori_overall = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
     persentase_overall = [persentase_tidak_layak_rumah, persentase_tidak_layak_sanitasi, persentase_tidak_baik_perilaku]
-    # Urutkan dari yang terbesar ke terkecil
     sorted_idx = sorted(range(len(persentase_overall)), key=lambda i: persentase_overall[i], reverse=True)
     kategori_overall = [kategori_overall[i] for i in sorted_idx]
     persentase_overall = [persentase_overall[i] for i in sorted_idx]
