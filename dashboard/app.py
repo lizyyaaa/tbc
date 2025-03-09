@@ -16,11 +16,11 @@ st.sidebar.header("⚙️ Input & Navigasi")
 # Upload File CSV di sidebar
 uploaded_file = st.sidebar.file_uploader("📂 Upload file CSV", type=["csv"])
 
-# Daftar visualisasi (sudah dihilangkan "Preview Data" dan "Preprocessing & Skor Kelayakan")
+# Daftar visualisasi dengan "Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak" di posisi pertama
 visualisasi_list = [
+    "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak",
     "📈 Kebiasaan CTPS vs Jumlah Pasien",
     "🐑 Memiliki Hewan Ternak vs Jumlah Pasien",
-    "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak",
     "🏠 Perbandingan Rumah Layak vs Tidak Layak (Jumlah)",
     "✅ Persentase Rumah Layak vs Tidak Layak",
     "🧩 Pie Chart Rumah Layak vs Tidak Layak",
@@ -172,13 +172,32 @@ if uploaded_file:
         """
     )
 
-    # Fungsi plotting
+    # Fungsi untuk menampilkan chart & clear
     def tampilkan_gambar():
         st.pyplot(plt.gcf())
         plt.clf()
 
-    # Pilihan visualisasi
-    if pilihan == "📈 Kebiasaan CTPS vs Jumlah Pasien":
+    # --- Visualisasi Berdasarkan Pilihan ---
+    if pilihan == "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak":
+        st.subheader("📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
+        kategori_overall = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
+        persentase_overall = [persentase_tidak_layak_rumah, persentase_tidak_layak_sanitasi, persentase_tidak_baik_perilaku]
+        sorted_idx = sorted(range(len(persentase_overall)), key=lambda i: persentase_overall[i], reverse=True)
+        kategori_overall = [kategori_overall[i] for i in sorted_idx]
+        persentase_overall = [persentase_overall[i] for i in sorted_idx]
+
+        plt.figure(figsize=(8, 4))  # Perkecil ukuran chart
+        plt.bar(kategori_overall, persentase_overall, color=['red', 'orange', 'blue'])
+        plt.xlabel("Kategori")
+        plt.ylabel("Persentase (%)")
+        plt.title("Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
+        plt.ylim(0, 100)
+        plt.grid(axis="y", linestyle="--", alpha=0.7)
+        for i, v in enumerate(persentase_overall):
+            plt.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
+        tampilkan_gambar()
+
+    elif pilihan == "📈 Kebiasaan CTPS vs Jumlah Pasien":
         st.subheader("📈 Kebiasaan CTPS vs Jumlah Pasien")
         data_ctps = df.groupby("kebiasaan_ctps")["pasien"].count().reset_index()
         data_ctps.columns = ["kebiasaan_ctps", "jumlah_pasien"]
@@ -186,7 +205,7 @@ if uploaded_file:
         total_pasien_ctps = data_ctps["jumlah_pasien"].sum()
         data_ctps["persentase"] = (data_ctps["jumlah_pasien"] / total_pasien_ctps) * 100
 
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(8, 4))  # Perkecil ukuran chart
         sns.barplot(x="jumlah_pasien", y="kebiasaan_ctps", data=data_ctps, palette="ch:s=.25,rot=-.25")
         plt.title("Kebiasaan CTPS vs Jumlah Pasien", fontsize=14, fontweight="bold")
         plt.xlabel("Jumlah Pasien", fontsize=12)
@@ -204,7 +223,7 @@ if uploaded_file:
         total_pasien_ternak = data_ternak["jumlah_pasien"].sum()
         data_ternak["persentase"] = (data_ternak["jumlah_pasien"] / total_pasien_ternak) * 100
 
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(8, 4))
         sns.barplot(x="jumlah_pasien", y="memiliki_hewan_ternak", data=data_ternak, palette="magma_r")
         plt.title("Memiliki Hewan Ternak vs Jumlah Pasien", fontsize=14, fontweight="bold")
         plt.xlabel("Jumlah Pasien", fontsize=12)
@@ -214,25 +233,6 @@ if uploaded_file:
             plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
         tampilkan_gambar()
 
-    elif pilihan == "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak":
-        st.subheader("📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
-        kategori_overall = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
-        persentase_overall = [persentase_tidak_layak_rumah, persentase_tidak_layak_sanitasi, persentase_tidak_baik_perilaku]
-        sorted_idx = sorted(range(len(persentase_overall)), key=lambda i: persentase_overall[i], reverse=True)
-        kategori_overall = [kategori_overall[i] for i in sorted_idx]
-        persentase_overall = [persentase_overall[i] for i in sorted_idx]
-
-        plt.figure(figsize=(8, 5))
-        plt.bar(kategori_overall, persentase_overall, color=['red', 'orange', 'blue'])
-        plt.xlabel("Kategori")
-        plt.ylabel("Persentase (%)")
-        plt.title("Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
-        plt.ylim(0, 100)
-        plt.grid(axis="y", linestyle="--", alpha=0.7)
-        for i, v in enumerate(persentase_overall):
-            plt.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
-        tampilkan_gambar()
-
     elif pilihan == "🏠 Perbandingan Rumah Layak vs Tidak Layak (Jumlah)":
         st.subheader("🏠 Perbandingan Rumah Layak vs Tidak Layak (Jumlah)")
         jumlah_rumah_layak = df_rumah[df_rumah["Label"] == "Layak"].shape[0]
@@ -240,7 +240,7 @@ if uploaded_file:
         kategori_rumah_status = ["Layak", "Tidak Layak"]
         jumlah_rumah = [jumlah_rumah_layak, jumlah_rumah_tidak_layak]
 
-        plt.figure(figsize=(6, 5))
+        plt.figure(figsize=(8, 4))
         plt.bar(kategori_rumah_status, jumlah_rumah, color=['green', 'red'])
         plt.xlabel("Kondisi Rumah")
         plt.ylabel("Jumlah")
@@ -257,7 +257,7 @@ if uploaded_file:
         kategori_rumah_pct = ["Layak", "Tidak Layak"]
         persentase_rumah = [persentase_layak_rumah, persentase_tidak_layak_rumah]
 
-        plt.figure(figsize=(6, 5))
+        plt.figure(figsize=(8, 4))
         plt.bar(kategori_rumah_pct, persentase_rumah, color=['green', 'red'])
         plt.xlabel("Kondisi Rumah")
         plt.ylabel("Persentase (%)")
@@ -274,7 +274,7 @@ if uploaded_file:
         sizes = [100 - persentase_tidak_layak_rumah, persentase_tidak_layak_rumah]
         colors = ['#4CAF50', '#E74C3C']
         explode = (0, 0.1)
-        plt.figure(figsize=(7, 7))
+        plt.figure(figsize=(8, 4))
         wedges, texts, autotexts = plt.pie(
             sizes, labels=labels, autopct='%1.1f%%', colors=colors,
             startangle=140, explode=explode, shadow=True,
@@ -293,7 +293,7 @@ if uploaded_file:
         sizes_sanitasi = [persentase_layak_sanitasi, persentase_tidak_layak_sanitasi]
         colors_sanitasi = ['#3498DB', '#E74C3C']
         explode_sanitasi = (0, 0.1)
-        plt.figure(figsize=(7, 7))
+        plt.figure(figsize=(8, 4))
         wedges, texts, autotexts = plt.pie(
             sizes_sanitasi, labels=labels_sanitasi, autopct='%1.1f%%', colors=colors_sanitasi,
             startangle=140, explode=explode_sanitasi, shadow=True,
@@ -312,7 +312,7 @@ if uploaded_file:
         sizes_perilaku = [persentase_baik_perilaku, persentase_tidak_baik_perilaku]
         colors_perilaku = ['#1F77B4', '#FF7F0E']
         explode_perilaku = (0, 0.1)
-        plt.figure(figsize=(7, 7))
+        plt.figure(figsize=(8, 4))
         wedges, texts, autotexts = plt.pie(
             sizes_perilaku, labels=labels_perilaku, autopct='%1.1f%%', colors=colors_perilaku,
             startangle=140, explode=explode_perilaku, shadow=True,
@@ -343,7 +343,7 @@ if uploaded_file:
         df_kategori_rumah['Persentase'] = (df_kategori_rumah['Jumlah'] / total_rumah) * 100
         df_kategori_rumah = df_kategori_rumah.sort_values(by='Jumlah', ascending=False)
 
-        plt.figure(figsize=(12, 7))
+        plt.figure(figsize=(8, 4))
         colors = sns.color_palette("viridis", len(df_kategori_rumah))
         ax = sns.barplot(x=df_kategori_rumah['Jumlah'], y=df_kategori_rumah['Kategori'], palette=colors)
         for idx, (value, pct) in enumerate(zip(df_kategori_rumah['Jumlah'], df_kategori_rumah['Persentase'])):
@@ -379,7 +379,7 @@ if uploaded_file:
         df_kategori_sanitasi['Persentase'] = (df_kategori_sanitasi['Jumlah'] / total_rumah) * 100
         df_kategori_sanitasi = df_kategori_sanitasi.sort_values(by='Jumlah', ascending=False)
 
-        plt.figure(figsize=(12, 7))
+        plt.figure(figsize=(8, 4))
         colors = sns.color_palette("crest", len(df_kategori_sanitasi))
         ax = sns.barplot(x=df_kategori_sanitasi['Jumlah'], y=df_kategori_sanitasi['Kategori'], palette=colors, edgecolor="black")
         for idx, (value, pct) in enumerate(zip(df_kategori_sanitasi['Jumlah'], df_kategori_sanitasi['Persentase'])):
@@ -407,7 +407,7 @@ if uploaded_file:
         df_kategori_perilaku['Persentase'] = (df_kategori_perilaku['Jumlah'] / total_rumah) * 100
         df_kategori_perilaku = df_kategori_perilaku.sort_values(by='Jumlah', ascending=False)
 
-        plt.figure(figsize=(12, 7))
+        plt.figure(figsize=(8, 4))
         colors = sns.color_palette("Blues", len(df_kategori_perilaku))
         ax = sns.barplot(x=df_kategori_perilaku['Jumlah'], y=df_kategori_perilaku['Kategori'], palette=colors, edgecolor="black")
         for idx, (value, pct) in enumerate(zip(df_kategori_perilaku['Jumlah'], df_kategori_perilaku['Persentase'])):
