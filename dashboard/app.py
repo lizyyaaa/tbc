@@ -103,44 +103,41 @@ if nav == "Home":
         "kandang_hewan": []  # Kosong, bisa diisi teks
     }
 
-            # Form input data manual tambahan
-            st.markdown("## Form Input Data Manual Tambahan")
-            with st.form(key="manual_form"):
-                input_manual = {}
-                # Untuk tiap kolom di option_dict, gunakan selectbox jika opsi tersedia
-                for col, options in option_dict.items():
-                    if options:
-                        input_manual[col] = st.selectbox(f"{col}", options)
-                    else:
-                        input_manual[col] = st.text_input(f"{col}", value="")
-                # Kolom 'pasien' sebagai text_input untuk ID atau keterangan
-                input_manual["pasien"] = st.text_input("Pasien (ID atau keterangan)", value="")
-                # Dua kolom tanggal: date_start dan tgl_kunjungan
-                input_manual["date_start"] = st.text_input("Tanggal Start (YYYY-MM-DD)", value=datetime.today().strftime("%Y-%m-%d"))
-                input_manual["tgl_kunjungan"] = st.text_input("Tanggal Kunjungan (YYYY-MM-DD)", value=datetime.today().strftime("%Y-%m-%d"))
-                submitted_manual = st.form_submit_button(label="Submit Data Manual Tambahan")
-            
-            if submitted_manual:
-                try:
-                    input_manual["date_start"] = pd.to_datetime(input_manual["date_start"])
-                    input_manual["tgl_kunjungan"] = pd.to_datetime(input_manual["tgl_kunjungan"])
-                except Exception as e:
-                    st.error("Format tanggal tidak valid. Gunakan format YYYY-MM-DD.")
-                df_manual = pd.DataFrame([input_manual])
-                st.success("Data manual tambahan berhasil ditambahkan!")
-                st.dataframe(df_manual)
-                if not df_csv.empty:
-                    df_combined = pd.concat([df_csv, df_manual], ignore_index=True)
-                else:
-                    df_combined = df_manual.copy()
-                st.session_state["data"] = df_combined
-                st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
-            elif not st.session_state["data"].empty:
-                st.markdown("### Data Gabungan Saat Ini")
-                st.dataframe(st.session_state["data"])
-
+    st.markdown("## Form Input Data Manual Tambahan")
+    with st.form(key="manual_form"):
+        input_manual = {}
+        # Untuk setiap kolom di option_dict, gunakan selectbox jika opsi tersedia
+        for col, options in option_dict.items():
+            if options:
+                input_manual[col] = st.selectbox(f"{col}", options)
+            else:
+                input_manual[col] = st.text_input(f"{col}", value="")
+        # Kolom 'pasien' sebagai text_input untuk ID atau keterangan
+        input_manual["pasien"] = st.text_input("Pasien (ID atau keterangan)", value="")
+        # Dua kolom tanggal: date_start dan tgl_kunjungan
+        input_manual["date_start"] = st.text_input("Tanggal Start (YYYY-MM-DD)", value=datetime.today().strftime("%Y-%m-%d"))
+        input_manual["tgl_kunjungan"] = st.text_input("Tanggal Kunjungan (YYYY-MM-DD)", value=datetime.today().strftime("%Y-%m-%d"))
+        submitted_manual = st.form_submit_button(label="Submit Data Manual Tambahan")
+    
+    if submitted_manual:
+        try:
+            input_manual["date_start"] = pd.to_datetime(input_manual["date_start"])
+            input_manual["tgl_kunjungan"] = pd.to_datetime(input_manual["tgl_kunjungan"])
+        except Exception as e:
+            st.error("Format tanggal tidak valid. Gunakan format YYYY-MM-DD.")
+        df_manual = pd.DataFrame([input_manual])
+        st.success("Data manual tambahan berhasil ditambahkan!")
+        st.dataframe(df_manual)
+        # Gabungkan data manual tambahan dengan data CSV (jika ada)
+        if not df_csv.empty:
+            df_combined = pd.concat([df_csv, df_manual], ignore_index=True)
         else:
-            st.warning("Data belum tersedia. Silakan upload file CSV atau input data manual tambahan.")
+            df_combined = df_manual.copy()
+        st.session_state["data"] = df_combined
+        st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
+    elif not st.session_state["data"].empty:
+        st.markdown("### Data Gabungan Saat Ini")
+        st.dataframe(st.session_state["data"])
 
 # ================================
 # Halaman Visualisasi
@@ -179,7 +176,7 @@ elif nav == "Visualisasi":
             'membuang_sampah', 'kebiasaan_ctps'
         ]
         
-        # Cek apakah data memiliki kolom untuk analisis skor
+        # Pastikan kolom-kolom tersebut ada
         if all(col in df.columns for col in kategori_rumah + kategori_sanitasi + kategori_perilaku):
             df_rumah = df[kategori_rumah].dropna()
             df_sanitasi = df[kategori_sanitasi].dropna()
@@ -280,7 +277,7 @@ elif nav == "Visualisasi":
                 """
             )
 
-            # Visualisasi sesuai pilihan
+            # Visualisasi berdasarkan pilihan
             if pilihan == "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak":
                 st.subheader("📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
                 kategori_overall = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
