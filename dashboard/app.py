@@ -4,53 +4,56 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 
-# Atur tema Streamlit dan Seaborn
+# Atur tema Seaborn
 sns.set_theme(style="whitegrid")
-st.title("Dashboard Analisis Data")
 
-# --- Sidebar: Upload File dan Navigasi Visualisasi ---
-st.sidebar.header("Input & Navigasi")
-uploaded_file = st.sidebar.file_uploader("Upload file CSV", type=["csv"])
+# Judul utama dengan emoji
+st.title("📊 Dashboard Analisis Data TBC")
 
+# Sidebar dengan judul dan emoji
+st.sidebar.header("⚙️ Input & Navigasi")
+
+# Upload File CSV di sidebar
+uploaded_file = st.sidebar.file_uploader("📂 Upload file CSV", type=["csv"])
+
+# Daftar visualisasi (sudah dihilangkan "Preview Data" dan "Preprocessing & Skor Kelayakan")
 visualisasi_list = [
-    "Preview Data",
-    "Preprocessing & Skor Kelayakan",
-    "Kebiasaan CTPS vs Jumlah Pasien",
-    "Memiliki Hewan Ternak vs Jumlah Pasien",
-    "Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak",
-    "Perbandingan Rumah Layak vs Tidak Layak (Jumlah)",
-    "Persentase Rumah Layak vs Tidak Layak",
-    "Pie Chart Rumah Layak vs Tidak Layak",
-    "Pie Chart Sanitasi Layak vs Tidak Layak",
-    "Pie Chart Perilaku Baik vs Tidak Baik",
-    "Kategori Rumah Tidak Layak (Detail)",
-    "Kategori Sanitasi Tidak Layak (Detail)",
-    "Kategori Perilaku Tidak Sehat (Detail)"
+    "📈 Kebiasaan CTPS vs Jumlah Pasien",
+    "🐑 Memiliki Hewan Ternak vs Jumlah Pasien",
+    "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak",
+    "🏠 Perbandingan Rumah Layak vs Tidak Layak (Jumlah)",
+    "✅ Persentase Rumah Layak vs Tidak Layak",
+    "🧩 Pie Chart Rumah Layak vs Tidak Layak",
+    "🚰 Pie Chart Sanitasi Layak vs Tidak Layak",
+    "🚩 Pie Chart Perilaku Baik vs Tidak Baik",
+    "🏚️ Kategori Rumah Tidak Layak (Detail)",
+    "🚽 Kategori Sanitasi Tidak Layak (Detail)",
+    "🚮 Kategori Perilaku Tidak Sehat (Detail)"
 ]
 
+# Pilihan visualisasi
 pilihan = st.sidebar.selectbox("Pilih Visualisasi", visualisasi_list)
 
-# Jika file sudah diupload, lakukan seluruh proses
+# Jika file diupload, lanjutkan
 if uploaded_file:
+    # Baca data
     df = pd.read_csv(uploaded_file, sep=';', encoding='utf-8')
-    st.subheader("Preview Data (10 Baris Pertama)")
-    st.dataframe(df.head(10))
     
     # --- Preprocessing ---
     kolom_numerik = df.select_dtypes(include=['number']).columns
     kolom_kategori = df.select_dtypes(include=['object']).columns
+    
+    # Isi missing values
     df[kolom_kategori] = df[kolom_kategori].apply(lambda x: x.fillna(x.mode()[0]))
     df[kolom_numerik] = df[kolom_numerik].apply(lambda x: x.fillna(x.mean()))
-    
-    st.write("Missing values setelah imputasi:", df.isnull().sum().sum())
-    st.write("Jumlah duplikasi:", df.duplicated().sum())
     df = df.drop_duplicates()
-    
+
+    # Pastikan kolom date_start format datetime
     if "date_start" in df.columns:
         df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
         df["year_month"] = df["date_start"].dt.to_period("M").astype(str)
-    
-    # --- Definisi Kategori & Perhitungan Skor ---
+
+    # Definisi kategori
     kategori_rumah = [
         'langit_langit', 'lantai', 'dinding', 'jendela_kamar_tidur',
         'jendela_ruang_keluarga', 'ventilasi', 'lubang_asap_dapur', 'pencahayaan'
@@ -64,24 +67,27 @@ if uploaded_file:
         'membuka_jendela_ruang_keluarga', 'membersihkan_rumah', 'membuang_tinja',
         'membuang_sampah', 'kebiasaan_ctps'
     ]
-    
+
+    # Pisahkan data
     df_rumah = df[kategori_rumah].dropna()
     df_sanitasi = df[kategori_sanitasi].dropna()
     df_perilaku = df[kategori_perilaku].dropna()
-    
+
+    # Fungsi hitung skor
     def hitung_skor(df_sub, kategori, bobot):
         skor = []
-        for index, row in df_sub.iterrows():
+        for _, row in df_sub.iterrows():
             total_skor = 0
             max_skor = 0
             for kolom in kategori:
                 if kolom in bobot and row[kolom] in bobot[kolom]:
                     total_skor += bobot[kolom][row[kolom]]
                     max_skor += 5
-            skor.append((total_skor / max_skor) * 100 if max_skor > 0 else 0)
+            skor.append((total_skor / max_skor) * 100 if max_skor else 0)
         df_sub["Skor Kelayakan"] = skor
         return df_sub
-    
+
+    # Bobot
     bobot_rumah = {
         "langit_langit": {"Ada": 5, "Tidak ada": 1},
         "lantai": {"Ubin/keramik/marmer": 5, "Baik": 4, "Kurang Baik": 3, "Papan/Anyaman Bambu/Plester Retak": 2, "Tanah": 1},
@@ -93,8 +99,21 @@ if uploaded_file:
         "pencahayaan": {"Terang/Dapat digunakan membaca normal": 5, "Baik": 4, "Kurang Baik": 3, "Kurang Terang": 2, "Tidak Terang/Kurang Jelas untuk membaca": 1}
     }
     bobot_sanitasi = {
-        "sarana_air_bersih": {"Ada,milik sendiri & memenuhi syarat kesehatan": 5, "Ada,bukan milik sendiri & memenuhi syarat kesehatan": 4, "Ada,milik sendiri & tidak memenuhi syarat kesehatan": 3, "Ada, bukan milik sendiri & tidak memenuhi syarat kesehatan": 2, "Tidak Ada": 1},
-        "jamban": {"Ada, leher angsa": 5, "Ada tutup & septic tank": 4, "Ada,bukan leher angsa ada tutup & septic tank": 3, "Ada,bukan leher angsa ada tutup & dialirkan ke sungai": 2, "Ada, bukan leher angsa tidak bertutup & dialirkan ke sungai": 2, "Tidak Ada": 1},
+        "sarana_air_bersih": {
+            "Ada,milik sendiri & memenuhi syarat kesehatan": 5,
+            "Ada,bukan milik sendiri & memenuhi syarat kesehatan": 4,
+            "Ada,milik sendiri & tidak memenuhi syarat kesehatan": 3,
+            "Ada, bukan milik sendiri & tidak memenuhi syarat kesehatan": 2,
+            "Tidak Ada": 1
+        },
+        "jamban": {
+            "Ada, leher angsa": 5,
+            "Ada tutup & septic tank": 4,
+            "Ada,bukan leher angsa ada tutup & septic tank": 3,
+            "Ada,bukan leher angsa ada tutup & dialirkan ke sungai": 2,
+            "Ada, bukan leher angsa tidak bertutup & dialirkan ke sungai": 2,
+            "Tidak Ada": 1
+        },
         "sarana_pembuangan_air_limbah": {
             'Ada, dialirkan ke selokan tertutup ("&"saluran kota) utk diolah lebih lanjut': 5,
             "Ada, bukan milik sendiri & memenuhi syarat kesehatan": 4,
@@ -102,8 +121,19 @@ if uploaded_file:
             "Ada, diresapkan tetapi mencemari sumber air (jarak <10m)": 2,
             "Tidak ada, sehingga tergenang dan tidak teratur di halaman/belakang rumah": 1
         },
-        "sarana_pembuangan_sampah": {"Ada, kedap air dan tertutup": 5, "Ada, kedap air dan tidak tertutup": 4, "Ada, tetapi tidak kedap air dan tidak tertutup": 3, "Tidak Ada": 1},
-        "sampah": {"Petugas": 5, "Dikelola Sendiri (Pilah Sampah)": 4, "Bakar": 3, "dll": 2, "Lainnya (Sungai)": 1}
+        "sarana_pembuangan_sampah": {
+            "Ada, kedap air dan tertutup": 5,
+            "Ada, kedap air dan tidak tertutup": 4,
+            "Ada, tetapi tidak kedap air dan tidak tertutup": 3,
+            "Tidak Ada": 1
+        },
+        "sampah": {
+            "Petugas": 5,
+            "Dikelola Sendiri (Pilah Sampah)": 4,
+            "Bakar": 3,
+            "dll": 2,
+            "Lainnya (Sungai)": 1
+        }
     }
     bobot_perilaku = {
         "perilaku_merokok": {"Tidak": 5, "Ya": 1},
@@ -115,31 +145,41 @@ if uploaded_file:
         "membuang_sampah": {"Dibuang ke tempat sampah/ada petugas sampah": 5, "Dilakukan pilah sampah/dikelola dengan baik": 4, "Kadang-kadang dibuang ke tempat sampah": 3, "Dibuang ke sungai/kebun/kolam/sembarangan / dibakar": 1},
         "kebiasaan_ctps": {"CTPS setiap aktivitas": 5, "Kadang-kadang CTPS": 3, "Tidak pernah CTPS": 1}
     }
-    
+
+    # Hitung skor
     df_rumah = hitung_skor(df_rumah, kategori_rumah, bobot_rumah)
     df_sanitasi = hitung_skor(df_sanitasi, kategori_sanitasi, bobot_sanitasi)
     df_perilaku = hitung_skor(df_perilaku, kategori_perilaku, bobot_perilaku)
-    
+
     threshold = 70
     def label_kelayakan(skor):
         return "Layak" if skor >= threshold else "Tidak Layak"
-    
+
     df_rumah["Label"] = df_rumah["Skor Kelayakan"].apply(label_kelayakan)
     df_sanitasi["Label"] = df_sanitasi["Skor Kelayakan"].apply(label_kelayakan)
     df_perilaku["Label"] = df_perilaku["Skor Kelayakan"].apply(label_kelayakan)
-    
+
     persentase_tidak_layak_rumah = (df_rumah[df_rumah["Label"] == "Tidak Layak"].shape[0] / df_rumah.shape[0]) * 100
     persentase_tidak_layak_sanitasi = (df_sanitasi[df_sanitasi["Label"] == "Tidak Layak"].shape[0] / df_sanitasi.shape[0]) * 100
     persentase_tidak_baik_perilaku = (df_perilaku[df_perilaku["Label"] == "Tidak Layak"].shape[0] / df_perilaku.shape[0]) * 100
-    
-    st.subheader("Hasil Skor & Persentase Kelayakan")
-    st.write(f"Persentase Rumah Tidak Layak: {persentase_tidak_layak_rumah:.2f}%")
-    st.write(f"Persentase Sanitasi Tidak Layak: {persentase_tidak_layak_sanitasi:.2f}%")
-    st.write(f"Persentase Perilaku Tidak Baik: {persentase_tidak_baik_perilaku:.2f}%")
-    
-    # --- Visualisasi Berdasarkan Pilihan Sidebar ---
-    if pilihan == "Kebiasaan CTPS vs Jumlah Pasien":
-        st.subheader("Kebiasaan CTPS vs Jumlah Pasien")
+
+    # Info ringkas di main page
+    st.markdown(
+        f"""
+        **Persentase Rumah Tidak Layak**: {persentase_tidak_layak_rumah:.2f}%  
+        **Persentase Sanitasi Tidak Layak**: {persentase_tidak_layak_sanitasi:.2f}%  
+        **Persentase Perilaku Tidak Baik**: {persentase_tidak_baik_perilaku:.2f}%  
+        """
+    )
+
+    # Fungsi plotting
+    def tampilkan_gambar():
+        st.pyplot(plt.gcf())
+        plt.clf()
+
+    # Pilihan visualisasi
+    if pilihan == "📈 Kebiasaan CTPS vs Jumlah Pasien":
+        st.subheader("📈 Kebiasaan CTPS vs Jumlah Pasien")
         data_ctps = df.groupby("kebiasaan_ctps")["pasien"].count().reset_index()
         data_ctps.columns = ["kebiasaan_ctps", "jumlah_pasien"]
         data_ctps = data_ctps.sort_values(by="jumlah_pasien", ascending=False)
@@ -154,11 +194,10 @@ if uploaded_file:
         plt.grid(axis="x", linestyle="--", alpha=0.6)
         for idx, (value, pct) in enumerate(zip(data_ctps["jumlah_pasien"], data_ctps["persentase"])):
             plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
-        st.pyplot(plt.gcf())
-        plt.clf()
-        
-    elif pilihan == "Memiliki Hewan Ternak vs Jumlah Pasien":
-        st.subheader("Memiliki Hewan Ternak vs Jumlah Pasien")
+        tampilkan_gambar()
+
+    elif pilihan == "🐑 Memiliki Hewan Ternak vs Jumlah Pasien":
+        st.subheader("🐑 Memiliki Hewan Ternak vs Jumlah Pasien")
         data_ternak = df.groupby("memiliki_hewan_ternak")["pasien"].count().reset_index()
         data_ternak.columns = ["memiliki_hewan_ternak", "jumlah_pasien"]
         data_ternak = data_ternak.sort_values(by="jumlah_pasien", ascending=False)
@@ -173,11 +212,10 @@ if uploaded_file:
         plt.grid(axis="x", linestyle="--", alpha=0.6)
         for idx, (value, pct) in enumerate(zip(data_ternak["jumlah_pasien"], data_ternak["persentase"])):
             plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
-        st.pyplot(plt.gcf())
-        plt.clf()
-        
-    elif pilihan == "Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak":
-        st.subheader("Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
+        tampilkan_gambar()
+
+    elif pilihan == "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak":
+        st.subheader("📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
         kategori_overall = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
         persentase_overall = [persentase_tidak_layak_rumah, persentase_tidak_layak_sanitasi, persentase_tidak_baik_perilaku]
         sorted_idx = sorted(range(len(persentase_overall)), key=lambda i: persentase_overall[i], reverse=True)
@@ -193,11 +231,10 @@ if uploaded_file:
         plt.grid(axis="y", linestyle="--", alpha=0.7)
         for i, v in enumerate(persentase_overall):
             plt.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
-        st.pyplot(plt.gcf())
-        plt.clf()
-        
-    elif pilihan == "Perbandingan Rumah Layak vs Tidak Layak (Jumlah)":
-        st.subheader("Perbandingan Rumah Layak vs Tidak Layak (Jumlah)")
+        tampilkan_gambar()
+
+    elif pilihan == "🏠 Perbandingan Rumah Layak vs Tidak Layak (Jumlah)":
+        st.subheader("🏠 Perbandingan Rumah Layak vs Tidak Layak (Jumlah)")
         jumlah_rumah_layak = df_rumah[df_rumah["Label"] == "Layak"].shape[0]
         jumlah_rumah_tidak_layak = df_rumah[df_rumah["Label"] == "Tidak Layak"].shape[0]
         kategori_rumah_status = ["Layak", "Tidak Layak"]
@@ -212,11 +249,10 @@ if uploaded_file:
         plt.grid(axis="y", linestyle="--", alpha=0.7)
         for i, v in enumerate(jumlah_rumah):
             plt.text(i, v + 2, str(v), ha="center", fontsize=10)
-        st.pyplot(plt.gcf())
-        plt.clf()
-        
-    elif pilihan == "Persentase Rumah Layak vs Tidak Layak":
-        st.subheader("Persentase Rumah Layak vs Tidak Layak")
+        tampilkan_gambar()
+
+    elif pilihan == "✅ Persentase Rumah Layak vs Tidak Layak":
+        st.subheader("✅ Persentase Rumah Layak vs Tidak Layak")
         persentase_layak_rumah = 100 - persentase_tidak_layak_rumah
         kategori_rumah_pct = ["Layak", "Tidak Layak"]
         persentase_rumah = [persentase_layak_rumah, persentase_tidak_layak_rumah]
@@ -230,11 +266,10 @@ if uploaded_file:
         plt.grid(axis="y", linestyle="--", alpha=0.7)
         for i, v in enumerate(persentase_rumah):
             plt.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
-        st.pyplot(plt.gcf())
-        plt.clf()
-        
-    elif pilihan == "Pie Chart Rumah Layak vs Tidak Layak":
-        st.subheader("Pie Chart Rumah Layak vs Tidak Layak")
+        tampilkan_gambar()
+
+    elif pilihan == "🧩 Pie Chart Rumah Layak vs Tidak Layak":
+        st.subheader("🧩 Pie Chart Rumah Layak vs Tidak Layak")
         labels = ["Layak", "Tidak Layak"]
         sizes = [100 - persentase_tidak_layak_rumah, persentase_tidak_layak_rumah]
         colors = ['#4CAF50', '#E74C3C']
@@ -249,11 +284,10 @@ if uploaded_file:
             autotext.set_fontsize(12)
             autotext.set_weight("bold")
         plt.title("Persentase Rumah Layak dan Tidak Layak", fontsize=14, fontweight="bold")
-        st.pyplot(plt.gcf())
-        plt.clf()
-        
-    elif pilihan == "Pie Chart Sanitasi Layak vs Tidak Layak":
-        st.subheader("Pie Chart Sanitasi Layak vs Tidak Layak")
+        tampilkan_gambar()
+
+    elif pilihan == "🚰 Pie Chart Sanitasi Layak vs Tidak Layak":
+        st.subheader("🚰 Pie Chart Sanitasi Layak vs Tidak Layak")
         persentase_layak_sanitasi = 100 - persentase_tidak_layak_sanitasi
         labels_sanitasi = ["Layak", "Tidak Layak"]
         sizes_sanitasi = [persentase_layak_sanitasi, persentase_tidak_layak_sanitasi]
@@ -269,11 +303,10 @@ if uploaded_file:
             autotext.set_fontsize(12)
             autotext.set_weight("bold")
         plt.title("Persentase Sanitasi Layak dan Tidak Layak", fontsize=14, fontweight="bold")
-        st.pyplot(plt.gcf())
-        plt.clf()
-        
-    elif pilihan == "Pie Chart Perilaku Baik vs Tidak Baik":
-        st.subheader("Pie Chart Perilaku Baik vs Tidak Baik")
+        tampilkan_gambar()
+
+    elif pilihan == "🚩 Pie Chart Perilaku Baik vs Tidak Baik":
+        st.subheader("🚩 Pie Chart Perilaku Baik vs Tidak Baik")
         persentase_baik_perilaku = 100 - persentase_tidak_baik_perilaku
         labels_perilaku = ["Baik", "Tidak Baik"]
         sizes_perilaku = [persentase_baik_perilaku, persentase_tidak_baik_perilaku]
@@ -289,11 +322,10 @@ if uploaded_file:
             autotext.set_fontsize(12)
             autotext.set_weight("bold")
         plt.title("Persentase Perilaku Baik dan Tidak Baik", fontsize=14, fontweight="bold")
-        st.pyplot(plt.gcf())
-        plt.clf()
-        
-    elif pilihan == "Kategori Rumah Tidak Layak (Detail)":
-        st.subheader("Kategori Rumah Tidak Layak (Detail)")
+        tampilkan_gambar()
+
+    elif pilihan == "🏚️ Kategori Rumah Tidak Layak (Detail)":
+        st.subheader("🏚️ Kategori Rumah Tidak Layak (Detail)")
         df = df.fillna('')
         total_rumah = len(df)
         kategori_rumah_detail = {
@@ -310,7 +342,7 @@ if uploaded_file:
         df_kategori_rumah = pd.DataFrame(list(kategori_rumah_detail.items()), columns=['Kategori', 'Jumlah'])
         df_kategori_rumah['Persentase'] = (df_kategori_rumah['Jumlah'] / total_rumah) * 100
         df_kategori_rumah = df_kategori_rumah.sort_values(by='Jumlah', ascending=False)
-        
+
         plt.figure(figsize=(12, 7))
         colors = sns.color_palette("viridis", len(df_kategori_rumah))
         ax = sns.barplot(x=df_kategori_rumah['Jumlah'], y=df_kategori_rumah['Kategori'], palette=colors)
@@ -320,11 +352,10 @@ if uploaded_file:
         plt.ylabel("Kategori Rumah Tidak Layak", fontsize=12)
         plt.title("Kategori Rumah Tidak Layak", fontsize=14, fontweight='bold')
         plt.xlim(0, df_kategori_rumah['Jumlah'].max() + 5)
-        st.pyplot(plt.gcf())
-        plt.clf()
-        
-    elif pilihan == "Kategori Sanitasi Tidak Layak (Detail)":
-        st.subheader("Kategori Sanitasi Tidak Layak (Detail)")
+        tampilkan_gambar()
+
+    elif pilihan == "🚽 Kategori Sanitasi Tidak Layak (Detail)":
+        st.subheader("🚽 Kategori Sanitasi Tidak Layak (Detail)")
         total_rumah = len(df)
         kategori_sanitasi_detail = {
             "Jamban bukan leher angsa, tidak bertutup & dialirkan ke sungai": df['jamban'].apply(lambda x: 'tidak bertutup' in str(x).lower() and 'sungai' in str(x).lower()).sum(),
@@ -347,7 +378,7 @@ if uploaded_file:
         df_kategori_sanitasi = pd.DataFrame(list(kategori_sanitasi_detail.items()), columns=['Kategori', 'Jumlah'])
         df_kategori_sanitasi['Persentase'] = (df_kategori_sanitasi['Jumlah'] / total_rumah) * 100
         df_kategori_sanitasi = df_kategori_sanitasi.sort_values(by='Jumlah', ascending=False)
-        
+
         plt.figure(figsize=(12, 7))
         colors = sns.color_palette("crest", len(df_kategori_sanitasi))
         ax = sns.barplot(x=df_kategori_sanitasi['Jumlah'], y=df_kategori_sanitasi['Kategori'], palette=colors, edgecolor="black")
@@ -358,11 +389,10 @@ if uploaded_file:
         plt.title("Kategori Sanitasi Tidak Layak", fontsize=14, fontweight='bold')
         plt.xticks(fontsize=11)
         plt.yticks(fontsize=11)
-        st.pyplot(plt.gcf())
-        plt.clf()
-        
-    elif pilihan == "Kategori Perilaku Tidak Sehat (Detail)":
-        st.subheader("Kategori Perilaku Tidak Sehat (Detail)")
+        tampilkan_gambar()
+
+    elif pilihan == "🚮 Kategori Perilaku Tidak Sehat (Detail)":
+        st.subheader("🚮 Kategori Perilaku Tidak Sehat (Detail)")
         total_rumah = len(df)
         kategori_perilaku_detail = {
             "BAB di sungai / kebun / kolam / sembarangan": df['membuang_tinja'].apply(lambda x: any(word in str(x).lower() for word in ['sungai', 'kebun', 'kolam', 'sembarangan'])).sum(),
@@ -376,7 +406,7 @@ if uploaded_file:
         df_kategori_perilaku = pd.DataFrame(list(kategori_perilaku_detail.items()), columns=['Kategori', 'Jumlah'])
         df_kategori_perilaku['Persentase'] = (df_kategori_perilaku['Jumlah'] / total_rumah) * 100
         df_kategori_perilaku = df_kategori_perilaku.sort_values(by='Jumlah', ascending=False)
-        
+
         plt.figure(figsize=(12, 7))
         colors = sns.color_palette("Blues", len(df_kategori_perilaku))
         ax = sns.barplot(x=df_kategori_perilaku['Jumlah'], y=df_kategori_perilaku['Kategori'], palette=colors, edgecolor="black")
@@ -387,7 +417,9 @@ if uploaded_file:
         plt.title("Kategori Perilaku Tidak Sehat", fontsize=14, fontweight='bold')
         plt.xticks(fontsize=11)
         plt.yticks(fontsize=11)
-        st.pyplot(plt.gcf())
-        plt.clf()
-        
+        tampilkan_gambar()
+
+    # Pesan sukses di sidebar
     st.sidebar.success("Visualisasi selesai ditampilkan!")
+else:
+    st.warning("Silakan upload file CSV di sidebar terlebih dahulu.")
