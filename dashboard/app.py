@@ -67,7 +67,7 @@ if nav == "Home":
         st.session_state["data"] = df_csv.copy()
         st.info("Data CSV telah disimpan ke data gabungan.")
 
-    # Option dictionary untuk input data tambahan (kecuali kolom umur, yang akan ditambahkan terpisah)
+    # Option dictionary untuk input data tambahan (tanpa kolom umur dan tanggal)
     option_dict = {
         "puskesmas": ['Puskesmas Kedungmundu', 'Puskesmas Sekaran', 'Puskesmas Karangdoro', 'Puskesmas Rowosari', 
                       'Puskesmas Bandarharjo', 'Puskesmas Pegandan', 'Puskesmas Mangkang', 'Puskesmas Candilama', 
@@ -181,19 +181,15 @@ if nav == "Home":
         input_manual["pasien"] = st.text_input("Pasien (ID atau keterangan)", value="")
         # Tambahkan kolom umur ("age") sebagai number_input
         input_manual["age"] = st.number_input("Age (Umur)", min_value=0, step=1, value=0)
-        # Dua kolom tanggal: date_start dan tgl_kunjungan
-        input_manual["date_start"] = st.text_input("Tanggal Start (YYYY-MM-DD)", 
-                                                  value=datetime.today().strftime("%Y-%m-%d"))
-        input_manual["tgl_kunjungan"] = st.text_input("Tanggal Kunjungan (YYYY-MM-DD)", 
-                                                     value=datetime.today().strftime("%Y-%m-%d"))
+        # Gunakan date_input untuk kolom tanggal
+        input_manual["date_start"] = st.date_input("Tanggal Start", value=datetime.today())
+        input_manual["tgl_kunjungan"] = st.date_input("Tanggal Kunjungan", value=datetime.today())
         submitted_manual = st.form_submit_button(label="Submit Data Manual Tambahan")
     
     if submitted_manual:
-        try:
-            input_manual["date_start"] = pd.to_datetime(input_manual["date_start"])
-            input_manual["tgl_kunjungan"] = pd.to_datetime(input_manual["tgl_kunjungan"])
-        except Exception as e:
-            st.error("Format tanggal tidak valid. Gunakan format YYYY-MM-DD.")
+        # Date input dari st.date_input sudah berupa tipe datetime.date, kita ubah ke pd.Timestamp
+        input_manual["date_start"] = pd.to_datetime(input_manual["date_start"])
+        input_manual["tgl_kunjungan"] = pd.to_datetime(input_manual["tgl_kunjungan"])
         df_manual = pd.DataFrame([input_manual])
         st.success("Data manual tambahan berhasil ditambahkan!")
         st.dataframe(df_manual)
@@ -348,12 +344,11 @@ elif nav == "Visualisasi":
                 """
             )
 
-            # Mendefinisikan opsi visualisasi
+            # Mendefinisikan opsi visualisasi (tanpa opsi chart "Perbandingan Rumah Layak vs Tidak Layak (Jumlah)")
             visualisasi_list = [
                 "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak",
                 "📈 Kebiasaan CTPS vs Jumlah Pasien",
                 "🐑 Memiliki Hewan Ternak vs Jumlah Pasien",
-                "🏠 Perbandingan Rumah Layak vs Tidak Layak (Jumlah)",
                 "✅ Persentase Rumah Layak vs Tidak Layak",
                 "🧩 Pie Chart Rumah Layak vs Tidak Layak",
                 "🚰 Pie Chart Sanitasi Layak vs Tidak Layak",
@@ -418,24 +413,6 @@ elif nav == "Visualisasi":
                 plt.grid(axis="x", linestyle="--", alpha=0.6)
                 for idx, (value, pct) in enumerate(zip(data_ternak["jumlah_pasien"], data_ternak["persentase"])):
                     plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
-                tampilkan_dan_download()
-
-            elif pilihan == "🏠 Perbandingan Rumah Layak vs Tidak Layak (Jumlah)":
-                st.subheader("🏠 Perbandingan Rumah Layak vs Tidak Layak (Jumlah)")
-                jumlah_rumah_layak = df_rumah[df_rumah["Label"] == "Layak"].shape[0]
-                jumlah_rumah_tidak_layak = df_rumah[df_rumah["Label"] == "Tidak Layak"].shape[0]
-                kategori_rumah_status = ["Layak", "Tidak Layak"]
-                jumlah_rumah = [jumlah_rumah_layak, jumlah_rumah_tidak_layak]
-
-                plt.figure(figsize=(8, 4))
-                plt.bar(kategori_rumah_status, jumlah_rumah, color=['green', 'red'])
-                plt.xlabel("Kondisi Rumah", fontsize=12)
-                plt.ylabel("Jumlah", fontsize=12)
-                plt.title("Perbandingan Rumah Layak dan Tidak Layak", fontsize=14, fontweight="bold")
-                plt.ylim(0, max(jumlah_rumah) + 10)
-                plt.grid(axis="y", linestyle="--", alpha=0.7)
-                for i, v in enumerate(jumlah_rumah):
-                    plt.text(i, v + 2, str(v), ha="center", fontsize=10)
                 tampilkan_dan_download()
 
             elif pilihan == "✅ Persentase Rumah Layak vs Tidak Layak":
@@ -509,98 +486,6 @@ elif nav == "Visualisasi":
                     autotext.set_fontsize(12)
                     autotext.set_weight("bold")
                 plt.title("Persentase Perilaku Baik dan Tidak Baik", fontsize=14, fontweight="bold")
-                tampilkan_dan_download()
-
-            elif pilihan == "🏚️ Kategori Rumah Tidak Layak (Detail)":
-                st.subheader("🏚️ Kategori Rumah Tidak Layak (Detail)")
-                df = df.fillna('')
-                total_rumah = len(df)
-                kategori_rumah_detail = {
-                    "Luas Ventilasi ≤ 10% Dari Luas Lantai": df['ventilasi'].str.contains('luas ventilasi < 10%', case=False, na=False).sum(),
-                    "Pencahayaan Kurang Terang, Kurang Jelas Untuk Membaca Normal": df['pencahayaan'].str.contains('kurang terang', case=False, na=False).sum(),
-                    "Lubang Asap Dapur Dengan Luas Ventilasi < 10% Dari Luas Lantai Dapur": df['lubang_asap_dapur'].str.contains('luas ventilasi < 10%', case=False, na=False).sum(),
-                    "Tidak Ada Jendela Di Rumah": df['ventilasi'].str.contains('tidak ada', case=False, na=False).sum(),
-                    "Tidak Ada Langit-Langit": df['langit_langit'].str.contains('tidak ada', case=False, na=False).sum(),
-                    "Lantai Papan/Anyaman Bambu/Plester Retak Berdebu": df['lantai'].str.contains('papan|anyaman bambu|plester retak', case=False, na=False).sum(),
-                    "Tidak Ada Lubang Asap Dapur": df['lubang_asap_dapur'].str.contains('tidak ada', case=False, na=False).sum(),
-                    "Lantai Tanah": df['lantai'].str.contains('tanah', case=False, na=False).sum(),
-                }
-                df_kategori_rumah = pd.DataFrame(list(kategori_rumah_detail.items()), columns=['Kategori', 'Jumlah'])
-                df_kategori_rumah['Persentase'] = (df_kategori_rumah['Jumlah'] / total_rumah) * 100
-                df_kategori_rumah = df_kategori_rumah.sort_values(by='Jumlah', ascending=False)
-
-                plt.figure(figsize=(8, 4))
-                colors = sns.color_palette("viridis", len(df_kategori_rumah))
-                ax = sns.barplot(x=df_kategori_rumah['Jumlah'], y=df_kategori_rumah['Kategori'], palette=colors)
-                for idx, (value, pct) in enumerate(zip(df_kategori_rumah['Jumlah'], df_kategori_rumah['Persentase'])):
-                    plt.text(value + 1, idx, f"{value} rumah ({pct:.1f}%)", va='center', fontsize=11)
-                plt.xlabel("Jumlah Rumah", fontsize=12)
-                plt.ylabel("Kategori Rumah Tidak Layak", fontsize=12)
-                plt.title("Kategori Rumah Tidak Layak", fontsize=14, fontweight='bold')
-                plt.xlim(0, df_kategori_rumah['Jumlah'].max() + 5)
-                tampilkan_dan_download()
-
-            elif pilihan == "🚽 Kategori Sanitasi Tidak Layak (Detail)":
-                st.subheader("🚽 Kategori Sanitasi Tidak Layak (Detail)")
-                total_rumah = len(df)
-                kategori_sanitasi_detail = {
-                    "Jamban Bukan Leher Angsa, Tidak Bertutup & Dialirkan Ke Sungai": df['jamban'].apply(lambda x: 'tidak bertutup' in str(x).lower() and 'sungai' in str(x).lower()).sum(),
-                    "Sarana Air Bersih Bukan Milik Sendiri & Tidak Memenuhi Syarat Kesehatan": df['sarana_air_bersih'].apply(lambda x: 'bukan milik sendiri' in str(x).lower() and 'tidak memenuhi' in str(x).lower()).sum(),
-                    "Tidak Ada Sarana Air Bersih": df['sarana_air_bersih'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
-                    "SPAL Diresapkan Tetapi Mencemari Sumber Air (Jarak <10m)": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'diresapkan' in str(x).lower() and 'mencemari' in str(x).lower()).sum(),
-                    "Tidak Ada Jamban": df['jamban'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
-                    "Jamban Bukan Leher Angsa, Ada Tutup & Dialirkan Ke Sungai": df['jamban'].apply(lambda x: 'bukan leher angsa' in str(x).lower() and 'tutup' in str(x).lower() and 'sungai' in str(x).lower()).sum(),
-                    "Tidak Ada Sarana Pembuangan Sampah": df['sarana_pembuangan_sampah'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
-                    "Tidak Ada SPAL": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
-                    "Sarana Air Bersih Milik Sendiri & Tidak Memenuhi Syarat Kesehatan": df['sarana_air_bersih'].apply(lambda x: 'milik sendiri' in str(x).lower() and 'tidak memenuhi' in str(x).lower()).sum(),
-                    "Jamban Bukan Leher Angsa, Ada Tutup & Septic Tank": df['jamban'].apply(lambda x: 'bukan leher angsa' in str(x).lower() and 'tutup' in str(x).lower() and 'septic tank' in str(x).lower()).sum(),
-                    "Sarana Pembuangan Sampah Tidak Kedap Air dan Tidak Tertutup": df['sarana_pembuangan_sampah'].apply(lambda x: 'tidak kedap' in str(x).lower() and 'tidak tertutup' in str(x).lower()).sum(),
-                    "SPAL Bukan Milik Sendiri & Memenuhi Syarat Kesehatan": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'bukan milik sendiri' in str(x).lower() and 'memenuhi' in str(x).lower()).sum(),
-                    "SPAL Diresapkan Ke Selokan Terbuka": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'diresapkan' in str(x).lower() and 'selokan terbuka' in str(x).lower()).sum(),
-                    "Sarana Air Bersih Bukan Milik Sendiri & Memenuhi Syarat Kesehatan": df['sarana_air_bersih'].apply(lambda x: 'bukan milik sendiri' in str(x).lower() and 'memenuhi' in str(x).lower()).sum(),
-                    "Sarana Pembuangan Sampah Kedap Air dan Tidak Tertutup": df['sarana_pembuangan_sampah'].apply(lambda x: 'kedap air' in str(x).lower() and 'tidak tertutup' in str(x).lower()).sum()
-                }
-                df_kategori_sanitasi = pd.DataFrame(list(kategori_sanitasi_detail.items()), columns=['Kategori', 'Jumlah'])
-                df_kategori_sanitasi['Persentase'] = (df_kategori_sanitasi['Jumlah'] / total_rumah) * 100
-                df_kategori_sanitasi = df_kategori_sanitasi.sort_values(by='Jumlah', ascending=False)
-
-                plt.figure(figsize=(8, 4))
-                colors = sns.color_palette("crest", len(df_kategori_sanitasi))
-                ax = sns.barplot(x=df_kategori_sanitasi['Jumlah'], y=df_kategori_sanitasi['Kategori'], palette=colors, edgecolor="black")
-                for idx, (value, pct) in enumerate(zip(df_kategori_sanitasi['Jumlah'], df_kategori_sanitasi['Persentase'])):
-                    plt.text(value + 1, idx, f"{value} rumah ({pct:.1f}%)", va='center', fontsize=11, color='black')
-                plt.xlabel("Jumlah Rumah", fontsize=12)
-                plt.ylabel("Kategori Sanitasi Tidak Layak", fontsize=12)
-                plt.title("Kategori Sanitasi Tidak Layak", fontsize=14, fontweight="bold")
-                plt.xticks(fontsize=11)
-                plt.yticks(fontsize=11)
-                tampilkan_dan_download()
-
-            elif pilihan == "🚮 Kategori Perilaku Tidak Sehat (Detail)":
-                st.subheader("🚮 Kategori Perilaku Tidak Sehat (Detail)")
-                total_rumah = len(df)
-                kategori_perilaku_detail = {
-                    "BAB Di Sungai / Kebun / Kolam / Sembarangan": df['membuang_tinja'].apply(lambda x: any(word in str(x).lower() for word in ['sungai', 'kebun', 'kolam', 'sembarangan'])).sum(),
-                    "Tidak CTPS": df['kebiasaan_ctps'].apply(lambda x: 'tidak' in str(x).lower()).sum(),
-                    "Tidak Pernah Membersihkan Rumah dan Halaman": df['membersihkan_rumah'].apply(lambda x: 'tidak pernah' in str(x).lower()).sum(),
-                    "Buang Sampah Ke Sungai / Kebun / Kolam / Sembarangan / Dibakar": df['membuang_sampah'].apply(lambda x: any(word in str(x).lower() for word in ['sungai', 'kebun', 'kolam', 'sembarangan', 'dibakar'])).sum(),
-                    "Tidak Pernah Buka Jendela Ruang Keluarga": df['membuka_jendela_ruang_keluarga'].apply(lambda x: 'tidak pernah' in str(x).lower()).sum(),
-                    "Tidak Pernah Buka Jendela Kamar Tidur": df['membuka_jendela_kamar_tidur'].apply(lambda x: 'tidak pernah' in str(x).lower()).sum(),
-                }
-                df_kategori_perilaku = pd.DataFrame(list(kategori_perilaku_detail.items()), columns=['Kategori', 'Jumlah'])
-                df_kategori_perilaku['Persentase'] = (df_kategori_perilaku['Jumlah'] / total_rumah) * 100
-                df_kategori_perilaku = df_kategori_perilaku.sort_values(by='Jumlah', ascending=False)
-
-                plt.figure(figsize=(8, 4))
-                colors = sns.color_palette("Blues", len(df_kategori_perilaku))
-                ax = sns.barplot(x=df_kategori_perilaku['Jumlah'], y=df_kategori_perilaku['Kategori'], palette=colors, edgecolor="black")
-                for idx, (value, pct) in enumerate(zip(df_kategori_perilaku['Jumlah'], df_kategori_perilaku['Persentase'])):
-                    plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=11, color='black')
-                plt.xlabel("Jumlah Rumah", fontsize=12)
-                plt.ylabel("Kategori Perilaku Tidak Sehat", fontsize=12)
-                plt.title("Kategori Perilaku Tidak Sehat", fontsize=14, fontweight="bold")
-                plt.xticks(fontsize=11)
-                plt.yticks(fontsize=11)
                 tampilkan_dan_download()
 
             st.sidebar.success("Visualisasi selesai ditampilkan!")
