@@ -738,7 +738,7 @@ elif nav == "📈 Visualisasi":
                         ax2.text(row["Jumlah"] + 0.5, index, f"{row['Jumlah']}", va="center", fontsize=10, color="black")
                     
                     # Tampilkan grafik dan tombol download
-        tampilkan_dan_download()
+                    tampilkan_dan_download()
 
 
             
