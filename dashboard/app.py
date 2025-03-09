@@ -396,7 +396,7 @@ elif nav == "📈 Visualisasi":
                 "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)",
                 "🩺 Jumlah Pasien per Puskesmas",
                 "📅 Tren Date Start Pasien",
-                "📊 Distribusi Usia per Gender (Clustering)"
+                "📊 Distribusi Usia"
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
@@ -671,8 +671,8 @@ elif nav == "📈 Visualisasi":
                 
                 tampilkan_dan_download()
                 
-            elif pilihan == "📊 Distribusi Usia per Gender (Clustering)":
-                st.subheader("📊 Distribusi Usia per Gender (Clustering)")
+            elif pilihan == "📊 Distribusi Usia":
+                st.subheader("📊 Distribusi Usia")
                 
                 # Pastikan kolom "age" ada dan bersifat numerik
                 if "age" not in df.columns:
@@ -690,7 +690,6 @@ elif nav == "📈 Visualisasi":
                         
                         # Grouping berdasarkan age_group dan gender
                         age_gender = df.groupby(["age_group", "gender"]).size().reset_index(name="count")
-                        st.write("Data Distribusi Usia per Gender:", age_gender)
                         
                         # Plot menggunakan Seaborn
                         fig_age, ax_age = plt.subplots(figsize=(10, 5))
@@ -699,8 +698,8 @@ elif nav == "📈 Visualisasi":
                         ax_age.set_ylabel("Jumlah")
                         ax_age.set_title("Distribusi Usia per Gender (Clustering)")
                         plt.xticks(rotation=45)
-                        st.pyplot(fig_age)
-                        tampilkan_dan_download()
+                        tampilkan_dan_download()  # Menampilkan chart dan opsi download
+
 
             
             st.sidebar.success("Visualisasi selesai ditampilkan!")
