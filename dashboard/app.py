@@ -5,8 +5,33 @@ import seaborn as sns
 from io import BytesIO
 from datetime import datetime
 
-# Atur tema Seaborn
+# 1) Nonaktifkan atau atur tema bawaan Streamlit agar teks tidak berwarna biru
+st.set_page_config(
+    page_title="Dashboard TBC",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    # Atur textColor jadi hitam
+    theme={
+        "primaryColor": "#ffffff",  # warna utama
+        "backgroundColor": "#ffffff",
+        "secondaryBackgroundColor": "#f0f2f6",
+        "textColor": "#000000",     # teks jadi hitam
+        "font": "sans serif"
+    }
+)
+
+# 2) Atur tema Seaborn
 sns.set_theme(style="whitegrid")
+
+# 3) Atur CSS global untuk memastikan warna teks di sidebar tidak di-override
+st.markdown("""
+<style>
+/* Paksa seluruh teks di sidebar jadi hitam */
+[data-testid="stSidebar"] * {
+    color: black !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Fungsi untuk menampilkan label kolom tanpa underscore
 def display_label(col_name: str) -> str:
@@ -16,13 +41,48 @@ def display_label(col_name: str) -> str:
 if "data" not in st.session_state:
     st.session_state["data"] = pd.DataFrame()
 
-# Mempercantik sidebar dengan logo
-logo_url = "https://raw.githubusercontent.com/lizyyaaa/tbc/main/dashboard/download%20(1).png"  # Ganti dengan URL logo yang diinginkan
-st.sidebar.image(logo_url, use_container_width=True)
-st.sidebar.markdown("---")
+# Mempercantik sidebar dengan logo (HTML + CSS)
+logo_url = "https://raw.githubusercontent.com/lizyyaaa/tbc/main/dashboard/download%20(1).png"
+
+st.sidebar.markdown(
+    f"""
+    <div style="
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        padding: 10px 0;
+    ">
+        <img src="{logo_url}" 
+             style="border-radius: 10px; 
+                    margin-bottom: 10px; 
+                    width: 180px; 
+                    max-width: 100%; 
+                    height: auto;"
+             alt="Logo Dinas Kesehatan" />
+        
+        <h2 style="
+                   text-align: center; 
+                   margin: 0; 
+                   font-family: 'Helvetica Neue', sans-serif;">
+            Dinas Kesehatan
+        </h2>
+        <p style="
+                  text-align: center; 
+                  margin: 0; 
+                  font-family: 'Helvetica Neue', sans-serif; 
+                  font-size: 14px;">
+            Kota Semarang
+        </p>
+    </div>
+    <hr style="margin: 10px 0;" />
+    """,
+    unsafe_allow_html=True
+)
 
 # Navigasi menggunakan radio button di sidebar
 nav = st.sidebar.radio("Navigasi", ["Home", "Visualisasi"])
+
 
 # Fungsi download chart
 def download_chart():
