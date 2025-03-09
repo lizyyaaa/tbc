@@ -17,14 +17,15 @@ if "data" not in st.session_state:
     st.session_state["data"] = pd.DataFrame()
 
 # Mempercantik sidebar dengan logo dan judul menggunakan fungsi bawaan Streamlit
-logo_url = "https://raw.githubusercontent.com/lizyyaaa/tbc/main/dashboard/download%20(1).png"  # Pastikan URL sudah dalam bentuk raw
+logo_url = "https://raw.githubusercontent.com/lizyyaaa/tbc/main/dashboard/download%20(1).png"  # Pastikan URL sudah raw
 st.sidebar.image(logo_url, use_container_width=True)
 st.sidebar.title("Dinas Kesehatan")
 st.sidebar.subheader("Kota Semarang")
 st.sidebar.markdown("---")
 
-# Navigasi menggunakan radio button di sidebar
-nav = st.sidebar.radio("Navigasi", ["Home", "Visualisasi"])
+# Navigasi dengan tampilan tombol yang diperindah
+nav = st.sidebar.radio("🔽 Pilih Halaman", ["🏠 Home", "📈 Visualisasi"])
+
 
 # Selanjutnya kode Home dan Visualisasi bisa disertakan di bawah ini...
 
