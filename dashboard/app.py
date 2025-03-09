@@ -393,7 +393,8 @@ elif nav == "📈 Visualisasi":
                 "🐑 Memiliki Hewan Ternak vs Jumlah Pasien",
                 "🏠 Rumah Layak & Tidak Layak (Chart + Detail)",
                 "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)",
-                "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)"
+                "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)",
+                "🩺 Jumlah Pasien per Puskesmas" 
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
@@ -619,5 +620,26 @@ elif nav == "📈 Visualisasi":
                 plt.yticks(fontsize=11)
                 tampilkan_dan_download()
 
+            elif pilihan == "🩺 Jumlah Pasien per Puskesmas":
+                st.subheader("🩺 Jumlah Pasien per Puskesmas")
+                # Hitung jumlah pasien berdasarkan puskesmas
+                puskesmas_counts = df.groupby("puskesmas")["pasien"].count().reset_index()
+                puskesmas_counts.columns = ["puskesmas", "jumlah_pasien"]
             
+                # Hitung persentase
+                total_pasien = puskesmas_counts["jumlah_pasien"].sum()
+                puskesmas_counts["persentase"] = (puskesmas_counts["jumlah_pasien"] / total_pasien) * 100
+            
+                # Urutkan dari terbanyak
+                puskesmas_counts = puskesmas_counts.sort_values(by="jumlah_pasien", ascending=False)
+            
+                plt.figure(figsize=(12, 6))
+                sns.barplot(x="jumlah_pasien", y="puskesmas", data=puskesmas_counts, palette="magma")
+                plt.title("Jumlah Pasien per Puskesmas", fontsize=14, fontweight="bold")
+                plt.xlabel("Jumlah Pasien", fontsize=12)
+                plt.ylabel("Puskesmas", fontsize=12)
+                plt.grid(axis="x", linestyle="--", alpha=0.6)
+                for index, (value, percent) in enumerate(zip(puskesmas_counts["jumlah_pasien"], puskesmas_counts["persentase"])):
+                    plt.text(value + 1, index, f"{value} ({percent:.1f}%)", va='center', fontsize=10, color="black")
+                tampilkan_dan_download()
             st.sidebar.success("Visualisasi selesai ditampilkan!")
