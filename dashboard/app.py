@@ -53,7 +53,7 @@ if nav == "Home":
     else:
         df_csv = pd.DataFrame()
 
-    # option_dict untuk input data tambahan
+    # Option dictionary untuk input data tambahan
     option_dict = {
         "puskesmas": ['Puskesmas Kedungmundu', 'Puskesmas Sekaran', 'Puskesmas Karangdoro', 'Puskesmas Rowosari', 'Puskesmas Bandarharjo', 'Puskesmas Pegandan', 'Puskesmas Mangkang', 'Puskesmas Candilama', 'Puskesmas Karang Malang', 'Puskesmas Ngaliyan', 'Puskesmas Lebdosari', 'Plamongan Sari', 'Puskesmas Purwoyoso', 'Puskesmas Bangetayu', 'Puskesmas Pandanaran', 'Puskesmas Mijen', 'Puskesmas Ngesrep', 'Puskesmas Karangayu', 'Puskesmas Tambakaji', 'Puskesmas Padangsari', 'Puskesmas Halmahera', 'Puskesmas Miroto', 'Puskesmas Genuk', 'bulusan', 'Puskesmas Bugangan', 'Puskesmas Tlogosari Wetan', 'Puskesmas Poncol', 'Puskesmas Pudak Payung', 'Puskesmas Kagok', 'Puskesmas Krobokan', 'Puskesmas Manyaran', 'Puskesmas Tlogosari Kulon', 'Puskesmas Karanganyar', 'Puskesmas Gunungpati', 'Puskesmas Ngemplak Simongan', 'Puskesmas Srondol', 'Puskesmas Gayamsari', 'Puskesmas Bulu Lor'],
         "gender": ['L', 'P'],
@@ -99,23 +99,25 @@ if nav == "Home":
     }
 
     st.markdown("## Form Input Data Manual Tambahan")
-    # Gunakan form di halaman Home untuk input data tambahan
     with st.form(key="manual_form"):
         input_manual = {}
-        # Untuk setiap kolom dalam option_dict, jika opsi tidak kosong, gunakan selectbox; jika kosong, gunakan text_input.
+        # Untuk setiap kolom pada option_dict, gunakan selectbox jika ada opsi, jika tidak, gunakan text_input.
         for col, options in option_dict.items():
             if options:
                 input_manual[col] = st.selectbox(f"{col}", options)
             else:
                 input_manual[col] = st.text_input(f"{col}", value="")
-        # Tambahkan kolom numerik yang mungkin tidak ada di option_dict
-        input_manual["pasien"] = st.number_input("Jumlah Pasien", min_value=0, step=1, value=0)
-        input_manual["date_start"] = st.text_input("Tanggal (YYYY-MM-DD)", value=datetime.today().strftime("%Y-%m-%d"))
+        # Untuk kolom 'pasien', gunakan text_input agar bisa diisi ID atau keterangan lain.
+        input_manual["pasien"] = st.text_input("Pasien (ID atau keterangan)", value="")
+        # Tambahkan dua kolom tanggal: date_start dan tgl_kunjungan
+        input_manual["date_start"] = st.text_input("Tanggal Start (YYYY-MM-DD)", value=datetime.today().strftime("%Y-%m-%d"))
+        input_manual["tgl_kunjungan"] = st.text_input("Tanggal Kunjungan (YYYY-MM-DD)", value=datetime.today().strftime("%Y-%m-%d"))
         submitted_manual = st.form_submit_button(label="Submit Data Manual Tambahan")
     
     if submitted_manual:
         try:
             input_manual["date_start"] = pd.to_datetime(input_manual["date_start"])
+            input_manual["tgl_kunjungan"] = pd.to_datetime(input_manual["tgl_kunjungan"])
         except Exception as e:
             st.error("Format tanggal tidak valid. Gunakan format YYYY-MM-DD.")
         df_manual = pd.DataFrame([input_manual])
@@ -128,7 +130,7 @@ if nav == "Home":
             df_combined = df_manual.copy()
         st.session_state["data"] = df_combined
         st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
-    elif st.session_state["data"].empty == False:
+    elif not st.session_state["data"].empty:
         st.markdown("### Data Gabungan Saat Ini")
         st.dataframe(st.session_state["data"])
 
@@ -154,7 +156,7 @@ elif nav == "Visualisasi":
             df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
             df["year_month"] = df["date_start"].dt.to_period("M").astype(str)
         
-        # Definisi kategori untuk analisis skor (sesuaikan jika perlu)
+        # Definisi kategori untuk analisis skor (sesuaikan dengan data)
         kategori_rumah = [
             'langit_langit', 'lantai', 'dinding', 'jendela_kamar_tidur',
             'jendela_ruang_keluarga', 'ventilasi', 'lubang_asap_dapur', 'pencahayaan'
@@ -169,7 +171,7 @@ elif nav == "Visualisasi":
             'membuang_sampah', 'kebiasaan_ctps'
         ]
         
-        # Pastikan kolom-kolom untuk analisis skor ada di data
+        # Pastikan kolom-kolom tersebut ada
         if all(col in df.columns for col in kategori_rumah + kategori_sanitasi + kategori_perilaku):
             df_rumah = df[kategori_rumah].dropna()
             df_sanitasi = df[kategori_sanitasi].dropna()
@@ -270,7 +272,7 @@ elif nav == "Visualisasi":
                 """
             )
 
-            # Visualisasi berdasarkan pilihan
+            # Visualisasi sesuai pilihan
             if pilihan == "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak":
                 st.subheader("📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
                 kategori_overall = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
@@ -281,9 +283,9 @@ elif nav == "Visualisasi":
 
                 plt.figure(figsize=(8, 4))
                 plt.bar(kategori_overall, persentase_overall, color=['red', 'orange', 'blue'])
-                plt.xlabel("Kategori")
-                plt.ylabel("Persentase (%)")
-                plt.title("Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
+                plt.xlabel("Kategori", fontsize=12)
+                plt.ylabel("Persentase (%)", fontsize=12)
+                plt.title("Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak", fontsize=14, fontweight="bold")
                 plt.ylim(0, 100)
                 plt.grid(axis="y", linestyle="--", alpha=0.7)
                 for i, v in enumerate(persentase_overall):
@@ -514,4 +516,4 @@ elif nav == "Visualisasi":
 
             st.sidebar.success("Visualisasi selesai ditampilkan!")
         else:
-            st.warning("Data tidak memiliki kolom untuk analisis skor. Silakan periksa data Anda.")
+            st.warning("Data tidak memiliki kolom yang dibutuhkan untuk analisis skor. Silakan periksa data Anda.")
