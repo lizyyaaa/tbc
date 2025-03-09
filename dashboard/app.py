@@ -75,7 +75,9 @@ if nav == "🏠 Home":
     if not df_csv.empty and st.session_state["data"].empty:
         st.session_state["data"] = df_csv.copy()
         st.info("Data CSV telah disimpan ke data gabungan.")
-    # Daftar urutan kolom yang diinginkan
+   
+
+    # Urutan field yang diinginkan
     fields_order = [
         "puskesmas", "pasien", "age", "gender", "faskes", "city", "regency",
         "kelurahan", "type_tb", "date_start", "tgl_kunjungan", "status_hamil",
@@ -93,8 +95,8 @@ if nav == "🏠 Home":
         "membersihkan_rumah", "membuang_tinja", "membuang_sampah",
         "kebiasaan_ctps", "memiliki_hewan_ternak", "kandang_hewan"
     ]
-
-    # Option dictionary untuk input data tambahan (tanpa kolom umur dan tanggal)
+    
+    # Option dictionary untuk field yang memiliki pilihan
     option_dict = {
         "puskesmas": ['Puskesmas Kedungmundu', 'Puskesmas Sekaran', 'Puskesmas Karangdoro', 'Puskesmas Rowosari', 
                       'Puskesmas Bandarharjo', 'Puskesmas Pegandan', 'Puskesmas Mangkang', 'Puskesmas Candilama', 
@@ -171,8 +173,7 @@ if nav == "🏠 Home":
                               'Ada, bukan milik sendiri & tidak memenuhi syarat kesehatan', 
                               'Ada,milik sendiri & memenuhi syarat kesehatan', 'Tidak Ada'],
         "jamban": ['Ada tutup & septic tank', 'Ada, leher angsa', 'Ada,bukan leher angsa ada tutup & septic tank', 
-                   'Ada,bukan leher angsa ada tutup & dialirkan ke sungai', 'Tidak Ada', 
-                   'Ada, bukan leher angsa tidak bertutup & dialirkan ke sungai'],
+                   'Ada,bukan leher angsa ada tutup & dialirkan ke sungai', 'Tidak Ada'],
         "sarana_pembuangan_air_limbah": ['Ada, diresapkan ke selokan terbuka', 
                                          'Tidak ada, sehingga tergenang dan tidak teratur di halaman/belakang rumah', 
                                          'Ada, bukan milik sendiri & memenuhi syarat kesehatan', 
@@ -191,44 +192,55 @@ if nav == "🏠 Home":
                             'Dilakukan pilah sampah/dikelola dengan baik'],
         "kebiasaan_ctps": ['Tidak pernah CTPS', 'Kadang-kadang CTPS', 'CTPS setiap aktivitas'],
         "memiliki_hewan_ternak": ['Tidak', 'Ya'],
-        "kandang_hewan": []  # Kosong, bisa diisi teks
+        "kandang_hewan": []  # Kosong, gunakan text_input
     }
     
     st.markdown("## Form Input Data Manual Tambahan")
     with st.form(key="manual_form"):
         input_manual = {}
-        # Gunakan selectbox untuk kolom dengan opsi, dan text_input jika tidak ada opsi
-        for col, options in option_dict.items():
-            label = display_label(col)
-            if options:
-                input_manual[col] = st.selectbox(f"{label}", options)
+        for col in fields_order:
+            label = col.replace("_", " ").title()  # Ganti dengan fungsi display_label jika ada
+            
+            # Kolom dengan tipe khusus
+            if col == "pasien":
+                input_manual[col] = st.text_input(label, value="")
+            elif col == "age":
+                input_manual[col] = st.number_input(label, min_value=0, step=1, value=0)
+            elif col in ["date_start", "tgl_kunjungan"]:
+                input_manual[col] = st.date_input(label, value=datetime.today())
+            # Kolom yang memiliki opsi di option_dict
+            elif col in option_dict:
+                options = option_dict[col]
+                if options:
+                    input_manual[col] = st.selectbox(label, options)
+                else:
+                    input_manual[col] = st.text_input(label, value="")
             else:
-                input_manual[col] = st.text_input(f"{label}", value="")
-        # Kolom 'pasien' sebagai text_input untuk ID atau keterangan
-        input_manual["pasien"] = st.text_input("Pasien (ID atau keterangan)", value="")
-        # Tambahkan kolom umur ("age") sebagai number_input
-        input_manual["age"] = st.number_input("Age (Umur)", min_value=0, step=1, value=0)
-        # Gunakan date_input untuk kolom tanggal
-        input_manual["date_start"] = st.date_input("Tanggal Start", value=datetime.today())
-        input_manual["tgl_kunjungan"] = st.date_input("Tanggal Kunjungan", value=datetime.today())
-        submitted_manual = st.form_submit_button(label="Submit Data Manual Tambahan")
+                # Kolom lainnya default ke text_input
+                input_manual[col] = st.text_input(label, value="")
+        
+        submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
     
     if submitted_manual:
-        # Date input dari st.date_input sudah berupa tipe datetime.date, kita ubah ke pd.Timestamp
+        # Ubah nilai date_input menjadi pd.Timestamp
         input_manual["date_start"] = pd.to_datetime(input_manual["date_start"])
         input_manual["tgl_kunjungan"] = pd.to_datetime(input_manual["tgl_kunjungan"])
         df_manual = pd.DataFrame([input_manual])
         st.success("Data manual tambahan berhasil ditambahkan!")
         st.dataframe(df_manual)
-        if not df_csv.empty:
-            df_combined = pd.concat([df_csv, df_manual], ignore_index=True)
+        
+        # Misal data CSV sudah ada dalam df_csv
+        if 'df_csv' in st.session_state and not st.session_state.get("data", pd.DataFrame()).empty:
+            df_combined = pd.concat([st.session_state["data"], df_manual], ignore_index=True)
         else:
             df_combined = df_manual.copy()
+        
         st.session_state["data"] = df_combined
         st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
-    elif not st.session_state["data"].empty:
+    elif "data" in st.session_state and not st.session_state["data"].empty:
         st.markdown("### Data Gabungan Saat Ini")
         st.dataframe(st.session_state["data"])
+
 
 # ================================
 # Halaman Visualisasi
