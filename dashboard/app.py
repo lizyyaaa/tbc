@@ -503,13 +503,11 @@ elif nav == "📈 Visualisasi":
                 plt.xlim(0, df_detail['Jumlah'].max() + 5)
                 tampilkan_dan_download()
 
-                tampilkan_dan_download()
-
 
             
             elif pilihan == "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)":
                 st.subheader("🚰 Sanitasi Layak & Tidak Layak")
-                # Pie Chart Sanitasi Layak vs Tidak Layak
+                # --- Pie Chart Sanitasi Layak vs Tidak Layak ---
                 persentase_layak_sanitasi = 100 - persentase_tidak_layak_sanitasi
                 labels_sanitasi = ["Layak", "Tidak Layak"]
                 sizes_sanitasi = [persentase_layak_sanitasi, persentase_tidak_layak_sanitasi]
@@ -526,16 +524,49 @@ elif nav == "📈 Visualisasi":
                     autotext.set_weight("bold")
                 plt.title("Persentase Sanitasi Layak dan Tidak Layak", fontsize=14, fontweight="bold")
                 tampilkan_dan_download()
-            
-                # Detail Kategori Sanitasi Tidak Layak
+                
+                # --- Detail: Bar Chart Detail Kategori Sanitasi Tidak Layak ---
                 st.markdown("#### Detail Kategori Sanitasi Tidak Layak")
-                # Misalnya, tampilkan tabel atau chart detail kategori sanitasi tidak layak
-                if "kategori_sanitasi" in df.columns:
-                    detail_sanitasi = df[df["kategori_sanitasi"] == "Tidak Layak"].groupby("sub_kategori_sanitasi")["pasien"].count().reset_index()
-                    detail_sanitasi.columns = ["Sub Kategori Sanitasi", "Jumlah Pasien"]
-                    st.dataframe(detail_sanitasi)
-                else:
-                    st.info("Data detail kategori sanitasi tidak tersedia.")
+                # Pastikan total_rumah didefinisikan berdasarkan df yang digunakan
+                total_rumah = len(df)
+                
+                # Hitung jumlah rumah yang memiliki setiap kategori sanitasi tidak layak
+                kategori_sanitasi_detail = {
+                    "Jamban bukan leher angsa, tidak bertutup & dialirkan ke sungai": df['jamban'].apply(lambda x: 'tidak bertutup' in str(x).lower() and 'sungai' in str(x).lower()).sum(),
+                    "Sarana air bersih bukan milik sendiri & tidak memenuhi syarat kesehatan": df['sarana_air_bersih'].apply(lambda x: 'bukan milik sendiri' in str(x).lower() and 'tidak memenuhi' in str(x).lower()).sum(),
+                    "Tidak ada Sarana Air Bersih": df['sarana_air_bersih'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
+                    "SPAL diresapkan tetapi mencemari sumber air (jarak <10m)": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'diresapkan' in str(x).lower() and 'mencemari' in str(x).lower()).sum(),
+                    "Tidak ada jamban": df['jamban'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
+                    "Jamban bukan leher angsa, ada tutup & dialirkan ke sungai": df['jamban'].apply(lambda x: 'bukan leher angsa' in str(x).lower() and 'tutup' in str(x).lower() and 'sungai' in str(x).lower()).sum(),
+                    "Tidak ada Sarana Pembuangan Sampah": df['sarana_pembuangan_sampah'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
+                    "Tidak ada SPAL": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
+                    "Sarana air bersih milik sendiri & tidak memenuhi syarat kesehatan": df['sarana_air_bersih'].apply(lambda x: 'milik sendiri' in str(x).lower() and 'tidak memenuhi' in str(x).lower()).sum(),
+                    "Jamban bukan leher angsa, ada tutup & septic tank": df['jamban'].apply(lambda x: 'bukan leher angsa' in str(x).lower() and 'tutup' in str(x).lower() and 'septic tank' in str(x).lower()).sum(),
+                    "Sarana Pembuangan Sampah tidak kedap air dan tidak tertutup": df['sarana_pembuangan_sampah'].apply(lambda x: 'tidak kedap' in str(x).lower() and 'tidak tertutup' in str(x).lower()).sum(),
+                    "SPAL bukan milik sendiri & memenuhi syarat kesehatan": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'bukan milik sendiri' in str(x).lower() and 'memenuhi' in str(x).lower()).sum(),
+                    "SPAL diresapkan ke selokan terbuka": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'diresapkan' in str(x).lower() and 'selokan terbuka' in str(x).lower()).sum(),
+                    "Sarana air bersih bukan milik sendiri & memenuhi syarat kesehatan": df['sarana_air_bersih'].apply(lambda x: 'bukan milik sendiri' in str(x).lower() and 'memenuhi' in str(x).lower()).sum(),
+                    "Sarana Pembuangan Sampah kedap air dan tidak tertutup": df['sarana_pembuangan_sampah'].apply(lambda x: 'kedap air' in str(x).lower() and 'tidak tertutup' in str(x).lower()).sum()
+                }
+                # Hapus kategori dengan nilai 0
+                kategori_sanitasi_detail = {k: v for k, v in kategori_sanitasi_detail.items() if v > 0}
+                df_sanitasi_detail = pd.DataFrame(list(kategori_sanitasi_detail.items()), columns=['Kategori', 'Jumlah'])
+                df_sanitasi_detail['Persentase'] = (df_sanitasi_detail['Jumlah'] / total_rumah) * 100
+                df_sanitasi_detail = df_sanitasi_detail.sort_values(by='Jumlah', ascending=False)
+                
+                sns.set_style("whitegrid")
+                plt.figure(figsize=(12, 7))
+                colors_detail = sns.color_palette("crest", len(df_sanitasi_detail))
+                ax = sns.barplot(x=df_sanitasi_detail['Jumlah'], y=df_sanitasi_detail['Kategori'], palette=colors_detail, edgecolor="black")
+                for index, (value, percent) in enumerate(zip(df_sanitasi_detail['Jumlah'], df_sanitasi_detail['Persentase'])):
+                    plt.text(value + 1, index, f"{value} rumah ({percent:.1f}%)", va='center', fontsize=11, color='black')
+                plt.xlabel("Jumlah Rumah", fontsize=12)
+                plt.ylabel("Kategori Sanitasi Tidak Layak", fontsize=12)
+                plt.title("Kategori Sanitasi Tidak Layak", fontsize=14, fontweight='bold')
+                plt.xticks(fontsize=11)
+                plt.yticks(fontsize=11)
+                tampilkan_dan_download()
+
             
             elif pilihan == "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)":
                 st.subheader("🚩 Perilaku Baik & Tidak Sehat")
