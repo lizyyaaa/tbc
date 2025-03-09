@@ -383,18 +383,14 @@ elif nav == "📈 Visualisasi":
                 """
             )
 
-            # Mendefinisikan opsi visualisasi (tanpa opsi chart "Perbandingan Rumah Layak vs Tidak Layak (Jumlah)")
+            # Mendefinisikan opsi visualisasi baru
             visualisasi_list = [
                 "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak",
                 "📈 Kebiasaan CTPS vs Jumlah Pasien",
                 "🐑 Memiliki Hewan Ternak vs Jumlah Pasien",
-                "✅ Persentase Rumah Layak vs Tidak Layak",
-                "🧩 Pie Chart Rumah Layak vs Tidak Layak",
-                "🚰 Pie Chart Sanitasi Layak vs Tidak Layak",
-                "🚩 Pie Chart Perilaku Baik vs Tidak Baik",
-                "🏚️ Kategori Rumah Tidak Layak (Detail)",
-                "🚽 Kategori Sanitasi Tidak Layak (Detail)",
-                "🚮 Kategori Perilaku Tidak Sehat (Detail)"
+                "🏠 Rumah Layak & Tidak Layak (Chart + Detail)",
+                "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)",
+                "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)"
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
@@ -406,7 +402,7 @@ elif nav == "📈 Visualisasi":
                 sorted_idx = sorted(range(len(persentase_overall)), key=lambda i: persentase_overall[i], reverse=True)
                 kategori_overall = [kategori_overall[i] for i in sorted_idx]
                 persentase_overall = [persentase_overall[i] for i in sorted_idx]
-
+            
                 plt.figure(figsize=(8, 4))
                 plt.bar(kategori_overall, persentase_overall, color=['red', 'orange', 'blue'])
                 plt.xlabel("Kategori", fontsize=12)
@@ -417,7 +413,7 @@ elif nav == "📈 Visualisasi":
                 for i, v in enumerate(persentase_overall):
                     plt.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
                 tampilkan_dan_download()
-
+            
             elif pilihan == "📈 Kebiasaan CTPS vs Jumlah Pasien":
                 st.subheader("📈 Kebiasaan CTPS vs Jumlah Pasien")
                 data_ctps = df.groupby("kebiasaan_ctps")["pasien"].count().reset_index()
@@ -425,7 +421,7 @@ elif nav == "📈 Visualisasi":
                 data_ctps = data_ctps.sort_values(by="jumlah_pasien", ascending=False)
                 total_pasien_ctps = data_ctps["jumlah_pasien"].sum()
                 data_ctps["persentase"] = (data_ctps["jumlah_pasien"] / total_pasien_ctps) * 100
-
+            
                 plt.figure(figsize=(8, 4))
                 sns.barplot(x="jumlah_pasien", y="kebiasaan_ctps", data=data_ctps, palette="ch:s=.25,rot=-.25")
                 plt.title("Kebiasaan CTPS vs Jumlah Pasien", fontsize=14, fontweight="bold")
@@ -435,7 +431,7 @@ elif nav == "📈 Visualisasi":
                 for idx, (value, pct) in enumerate(zip(data_ctps["jumlah_pasien"], data_ctps["persentase"])):
                     plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
                 tampilkan_dan_download()
-
+            
             elif pilihan == "🐑 Memiliki Hewan Ternak vs Jumlah Pasien":
                 st.subheader("🐑 Memiliki Hewan Ternak vs Jumlah Pasien")
                 data_ternak = df.groupby("memiliki_hewan_ternak")["pasien"].count().reset_index()
@@ -443,7 +439,7 @@ elif nav == "📈 Visualisasi":
                 data_ternak = data_ternak.sort_values(by="jumlah_pasien", ascending=False)
                 total_pasien_ternak = data_ternak["jumlah_pasien"].sum()
                 data_ternak["persentase"] = (data_ternak["jumlah_pasien"] / total_pasien_ternak) * 100
-
+            
                 plt.figure(figsize=(8, 4))
                 sns.barplot(x="jumlah_pasien", y="memiliki_hewan_ternak", data=data_ternak, palette="magma_r")
                 plt.title("Memiliki Hewan Ternak vs Jumlah Pasien", fontsize=14, fontweight="bold")
@@ -453,26 +449,10 @@ elif nav == "📈 Visualisasi":
                 for idx, (value, pct) in enumerate(zip(data_ternak["jumlah_pasien"], data_ternak["persentase"])):
                     plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
                 tampilkan_dan_download()
-
-            elif pilihan == "✅ Persentase Rumah Layak vs Tidak Layak":
-                st.subheader("✅ Persentase Rumah Layak vs Tidak Layak")
-                persentase_layak_rumah = 100 - persentase_tidak_layak_rumah
-                kategori_rumah_pct = ["Layak", "Tidak Layak"]
-                persentase_rumah = [persentase_layak_rumah, persentase_tidak_layak_rumah]
-
-                plt.figure(figsize=(8, 4))
-                plt.bar(kategori_rumah_pct, persentase_rumah, color=['green', 'red'])
-                plt.xlabel("Kondisi Rumah", fontsize=12)
-                plt.ylabel("Persentase (%)", fontsize=12)
-                plt.title("Persentase Rumah Layak dan Tidak Layak", fontsize=14, fontweight="bold")
-                plt.ylim(0, 100)
-                plt.grid(axis="y", linestyle="--", alpha=0.7)
-                for i, v in enumerate(persentase_rumah):
-                    plt.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
-                tampilkan_dan_download()
-
-            elif pilihan == "🧩 Pie Chart Rumah Layak vs Tidak Layak":
-                st.subheader("🧩 Pie Chart Rumah Layak vs Tidak Layak")
+            
+            elif pilihan == "🏠 Rumah Layak & Tidak Layak (Chart + Detail)":
+                st.subheader("🏠 Rumah Layak & Tidak Layak")
+                # Pie Chart Rumah Layak vs Tidak Layak
                 labels = ["Layak", "Tidak Layak"]
                 sizes = [100 - persentase_tidak_layak_rumah, persentase_tidak_layak_rumah]
                 colors = ['#4CAF50', '#E74C3C']
@@ -488,9 +468,21 @@ elif nav == "📈 Visualisasi":
                     autotext.set_weight("bold")
                 plt.title("Persentase Rumah Layak dan Tidak Layak", fontsize=14, fontweight="bold")
                 tampilkan_dan_download()
-
-            elif pilihan == "🚰 Pie Chart Sanitasi Layak vs Tidak Layak":
-                st.subheader("🚰 Pie Chart Sanitasi Layak vs Tidak Layak")
+            
+                # Detail Kategori Rumah Tidak Layak
+                st.markdown("#### Detail Kategori Rumah Tidak Layak")
+                # Misalnya, tampilkan tabel atau chart detail kategori rumah tidak layak
+                # Contoh: hitung jumlah pasien berdasarkan kategori rumah tidak layak (sesuaikan dengan data)
+                if "kategori_rumah" in df.columns:
+                    detail_rumah = df[df["kategori_rumah"] == "Tidak Layak"].groupby("sub_kategori_rumah")["pasien"].count().reset_index()
+                    detail_rumah.columns = ["Sub Kategori Rumah", "Jumlah Pasien"]
+                    st.dataframe(detail_rumah)
+                else:
+                    st.info("Data detail kategori rumah tidak layak tidak tersedia.")
+            
+            elif pilihan == "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)":
+                st.subheader("🚰 Sanitasi Layak & Tidak Layak")
+                # Pie Chart Sanitasi Layak vs Tidak Layak
                 persentase_layak_sanitasi = 100 - persentase_tidak_layak_sanitasi
                 labels_sanitasi = ["Layak", "Tidak Layak"]
                 sizes_sanitasi = [persentase_layak_sanitasi, persentase_tidak_layak_sanitasi]
@@ -507,9 +499,20 @@ elif nav == "📈 Visualisasi":
                     autotext.set_weight("bold")
                 plt.title("Persentase Sanitasi Layak dan Tidak Layak", fontsize=14, fontweight="bold")
                 tampilkan_dan_download()
-
-            elif pilihan == "🚩 Pie Chart Perilaku Baik vs Tidak Baik":
-                st.subheader("🚩 Pie Chart Perilaku Baik vs Tidak Baik")
+            
+                # Detail Kategori Sanitasi Tidak Layak
+                st.markdown("#### Detail Kategori Sanitasi Tidak Layak")
+                # Misalnya, tampilkan tabel atau chart detail kategori sanitasi tidak layak
+                if "kategori_sanitasi" in df.columns:
+                    detail_sanitasi = df[df["kategori_sanitasi"] == "Tidak Layak"].groupby("sub_kategori_sanitasi")["pasien"].count().reset_index()
+                    detail_sanitasi.columns = ["Sub Kategori Sanitasi", "Jumlah Pasien"]
+                    st.dataframe(detail_sanitasi)
+                else:
+                    st.info("Data detail kategori sanitasi tidak tersedia.")
+            
+            elif pilihan == "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)":
+                st.subheader("🚩 Perilaku Baik & Tidak Sehat")
+                # Pie Chart Perilaku Baik vs Tidak Baik
                 persentase_baik_perilaku = 100 - persentase_tidak_baik_perilaku
                 labels_perilaku = ["Baik", "Tidak Baik"]
                 sizes_perilaku = [persentase_baik_perilaku, persentase_tidak_baik_perilaku]
@@ -526,7 +529,15 @@ elif nav == "📈 Visualisasi":
                     autotext.set_weight("bold")
                 plt.title("Persentase Perilaku Baik dan Tidak Baik", fontsize=14, fontweight="bold")
                 tampilkan_dan_download()
-
+            
+                # Detail Kategori Perilaku Tidak Sehat
+                st.markdown("#### Detail Kategori Perilaku Tidak Sehat")
+                # Misalnya, tampilkan tabel atau chart detail untuk perilaku tidak sehat
+                if "kategori_perilaku" in df.columns:
+                    detail_perilaku = df[df["kategori_perilaku"] == "Tidak Sehat"].groupby("sub_kategori_perilaku")["pasien"].count().reset_index()
+                    detail_perilaku.columns = ["Sub Kategori Perilaku", "Jumlah Pasien"]
+                    st.dataframe(detail_perilaku)
+                else:
+                    st.info("Data detail kategori perilaku tidak tersedia.")
+            
             st.sidebar.success("Visualisasi selesai ditampilkan!")
-        else:
-            st.warning("Data tidak memiliki kolom yang dibutuhkan untuk analisis skor. Silakan periksa data Anda.")
