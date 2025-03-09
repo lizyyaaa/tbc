@@ -3,6 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
+from io import BytesIO
+
 
 # 2) Atur tema Seaborn
 sns.set_theme(style="whitegrid")
