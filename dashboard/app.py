@@ -473,42 +473,34 @@ elif nav == "📈 Visualisasi":
                 
                 # --- Detail: Bar Chart Kategori Rumah Tidak Layak ---
                 st.markdown("#### Detail Kategori Rumah Tidak Layak")
-                # Kode detail berikut menggunakan filtering pada kolom yang bersangkutan.
-                # Jika kolom "kategori_rumah" tidak ada, Anda bisa menyesuaikannya sesuai dengan struktur data.
-                if "kategori_rumah" in df.columns:
-                    # Hitung jumlah rumah per sub kategori berdasarkan beberapa kriteria
-                    kategori_rumah_detail = {
-                        "Luas ventilasi ≤ 10% dari luas lantai": df['ventilasi'].str.contains('luas ventilasi < 10%', case=False, na=False).sum(),
-                        "Pencahayaan kurang terang, kurang jelas untuk membaca normal": df['pencahayaan'].str.contains('kurang terang', case=False, na=False).sum(),
-                        "Lubang asap dapur dengan luas ventilasi < 10% dari luas lantai dapur": df['lubang_asap_dapur'].str.contains('luas ventilasi < 10%', case=False, na=False).sum(),
-                        "Tidak Ada Jendela di Rumah": df['ventilasi'].str.contains('tidak ada', case=False, na=False).sum(),
-                        "Tidak Ada Langit-Langit": df['langit_langit'].str.contains('tidak ada', case=False, na=False).sum(),
-                        "Lantai Papan/anyaman bambu/plester retak berdebu": df['lantai'].str.contains('papan|anyaman bambu|plester retak', case=False, na=False).sum(),
-                        "Tidak ada lubang asap dapur": df['lubang_asap_dapur'].str.contains('tidak ada', case=False, na=False).sum(),
-                        "Lantai Tanah": df['lantai'].str.contains('tanah', case=False, na=False).sum(),
-                    }
-                    # Hapus kategori dengan nilai 0
-                    kategori_rumah_detail = {k: v for k, v in kategori_rumah_detail.items() if v > 0}
-                    # Ubah ke DataFrame untuk plotting
-                    df_detail = pd.DataFrame(list(kategori_rumah_detail.items()), columns=['Kategori', 'Jumlah'])
-                    df_detail['Persentase'] = (df_detail['Jumlah'] / total_rumah) * 100
-                    df_detail = df_detail.sort_values(by='Jumlah', ascending=False)
-                    
-                    sns.set_style("whitegrid")
-                    plt.figure(figsize=(12, 7))
-                    colors_detail = sns.color_palette("viridis", len(df_detail))
-                    ax = sns.barplot(x=df_detail['Jumlah'], y=df_detail['Kategori'], palette=colors_detail)
-                    for index, (value, percent) in enumerate(zip(df_detail['Jumlah'], df_detail['Persentase'])):
-                        plt.text(value + 1, index, f"{value} rumah ({percent:.1f}%)", va='center')
-                    plt.xlabel("Jumlah Rumah", fontsize=12)
-                    plt.ylabel("Kategori Rumah Tidak Layak", fontsize=12)
-                    plt.title("Kategori Rumah Tidak Layak", fontsize=14, fontweight='bold')
-                    plt.xlim(0, df_detail['Jumlah'].max() + 5)
-                    st.pyplot(plt.gcf())
-                    plt.clf()
-                else:
-                    st.info("Data detail kategori rumah tidak layak tidak tersedia.")
-
+                # Jika tidak ada kolom 'kategori_rumah', langsung gunakan filtering berdasarkan kolom terkait
+                kategori_rumah_detail = {
+                    "Luas ventilasi ≤ 10% dari luas lantai": df['ventilasi'].str.contains('luas ventilasi < 10%', case=False, na=False).sum(),
+                    "Pencahayaan kurang terang, kurang jelas untuk membaca normal": df['pencahayaan'].str.contains('kurang terang', case=False, na=False).sum(),
+                    "Lubang asap dapur dengan luas ventilasi < 10% dari luas lantai dapur": df['lubang_asap_dapur'].str.contains('luas ventilasi < 10%', case=False, na=False).sum(),
+                    "Tidak Ada Jendela di Rumah": df['ventilasi'].str.contains('tidak ada', case=False, na=False).sum(),
+                    "Tidak Ada Langit-Langit": df['langit_langit'].str.contains('tidak ada', case=False, na=False).sum(),
+                    "Lantai Papan/anyaman bambu/plester retak berdebu": df['lantai'].str.contains('papan|anyaman bambu|plester retak', case=False, na=False).sum(),
+                    "Tidak ada lubang asap dapur": df['lubang_asap_dapur'].str.contains('tidak ada', case=False, na=False).sum(),
+                    "Lantai Tanah": df['lantai'].str.contains('tanah', case=False, na=False).sum(),
+                }
+                kategori_rumah_detail = {k: v for k, v in kategori_rumah_detail.items() if v > 0}
+                df_detail = pd.DataFrame(list(kategori_rumah_detail.items()), columns=['Kategori', 'Jumlah'])
+                df_detail['Persentase'] = (df_detail['Jumlah'] / total_rumah) * 100
+                df_detail = df_detail.sort_values(by='Jumlah', ascending=False)
+                
+                sns.set_style("whitegrid")
+                plt.figure(figsize=(12, 7))
+                colors_detail = sns.color_palette("viridis", len(df_detail))
+                ax = sns.barplot(x=df_detail['Jumlah'], y=df_detail['Kategori'], palette=colors_detail)
+                for index, (value, percent) in enumerate(zip(df_detail['Jumlah'], df_detail['Persentase'])):
+                    plt.text(value + 1, index, f"{value} rumah ({percent:.1f}%)", va='center')
+                plt.xlabel("Jumlah Rumah", fontsize=12)
+                plt.ylabel("Kategori Rumah Tidak Layak", fontsize=12)
+                plt.title("Kategori Rumah Tidak Layak", fontsize=14, fontweight='bold')
+                plt.xlim(0, df_detail['Jumlah'].max() + 5)
+                st.pyplot(plt.gcf())
+                plt.clf()
 
             
             elif pilihan == "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)":
