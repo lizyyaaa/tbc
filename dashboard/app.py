@@ -500,8 +500,8 @@ elif nav == "📈 Visualisasi":
                 plt.ylabel("Kategori Rumah Tidak Layak", fontsize=12)
                 plt.title("Kategori Rumah Tidak Layak", fontsize=14, fontweight='bold')
                 plt.xlim(0, df_detail['Jumlah'].max() + 5)
-                st.pyplot(plt.gcf())
-                plt.clf()
+                tampilkan_dan_download()
+
                 tampilkan_dan_download()
 
 
