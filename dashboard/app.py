@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from io import BytesIO
 from datetime import datetime
 
 # Atur tema Seaborn
@@ -34,6 +35,19 @@ visualisasi_list = [
 # Pilihan visualisasi
 pilihan = st.sidebar.selectbox("Pilih Visualisasi", visualisasi_list)
 
+# Fungsi untuk menyimpan gambar ke BytesIO dan menampilkan tombol download
+def download_chart():
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    buffer.seek(0)
+    st.download_button(
+        label="⬇️ Download Gambar",
+        data=buffer,
+        file_name="chart.png",
+        mime="image/png"
+    )
+    buffer.close()
+
 # Jika file diupload, lanjutkan
 if uploaded_file:
     # Baca data
@@ -42,8 +56,6 @@ if uploaded_file:
     # --- Preprocessing ---
     kolom_numerik = df.select_dtypes(include=['number']).columns
     kolom_kategori = df.select_dtypes(include=['object']).columns
-    
-    # Isi missing values
     df[kolom_kategori] = df[kolom_kategori].apply(lambda x: x.fillna(x.mode()[0]))
     df[kolom_numerik] = df[kolom_numerik].apply(lambda x: x.fillna(x.mean()))
     df = df.drop_duplicates()
@@ -163,7 +175,6 @@ if uploaded_file:
     persentase_tidak_layak_sanitasi = (df_sanitasi[df_sanitasi["Label"] == "Tidak Layak"].shape[0] / df_sanitasi.shape[0]) * 100
     persentase_tidak_baik_perilaku = (df_perilaku[df_perilaku["Label"] == "Tidak Layak"].shape[0] / df_perilaku.shape[0]) * 100
 
-    # Info ringkas di main page
     st.markdown(
         f"""
         **Persentase Rumah Tidak Layak**: {persentase_tidak_layak_rumah:.2f}%  
@@ -172,9 +183,10 @@ if uploaded_file:
         """
     )
 
-    # Fungsi untuk menampilkan chart & clear
-    def tampilkan_gambar():
+    # Fungsi untuk menampilkan chart dan download
+    def tampilkan_dan_download():
         st.pyplot(plt.gcf())
+        download_chart()
         plt.clf()
 
     # --- Visualisasi Berdasarkan Pilihan ---
@@ -186,7 +198,7 @@ if uploaded_file:
         kategori_overall = [kategori_overall[i] for i in sorted_idx]
         persentase_overall = [persentase_overall[i] for i in sorted_idx]
 
-        plt.figure(figsize=(8, 4))  # Perkecil ukuran chart
+        plt.figure(figsize=(8, 4))
         plt.bar(kategori_overall, persentase_overall, color=['red', 'orange', 'blue'])
         plt.xlabel("Kategori")
         plt.ylabel("Persentase (%)")
@@ -195,7 +207,7 @@ if uploaded_file:
         plt.grid(axis="y", linestyle="--", alpha=0.7)
         for i, v in enumerate(persentase_overall):
             plt.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
-        tampilkan_gambar()
+        tampilkan_dan_download()
 
     elif pilihan == "📈 Kebiasaan CTPS vs Jumlah Pasien":
         st.subheader("📈 Kebiasaan CTPS vs Jumlah Pasien")
@@ -205,7 +217,7 @@ if uploaded_file:
         total_pasien_ctps = data_ctps["jumlah_pasien"].sum()
         data_ctps["persentase"] = (data_ctps["jumlah_pasien"] / total_pasien_ctps) * 100
 
-        plt.figure(figsize=(8, 4))  # Perkecil ukuran chart
+        plt.figure(figsize=(8, 4))
         sns.barplot(x="jumlah_pasien", y="kebiasaan_ctps", data=data_ctps, palette="ch:s=.25,rot=-.25")
         plt.title("Kebiasaan CTPS vs Jumlah Pasien", fontsize=14, fontweight="bold")
         plt.xlabel("Jumlah Pasien", fontsize=12)
@@ -213,7 +225,7 @@ if uploaded_file:
         plt.grid(axis="x", linestyle="--", alpha=0.6)
         for idx, (value, pct) in enumerate(zip(data_ctps["jumlah_pasien"], data_ctps["persentase"])):
             plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
-        tampilkan_gambar()
+        tampilkan_dan_download()
 
     elif pilihan == "🐑 Memiliki Hewan Ternak vs Jumlah Pasien":
         st.subheader("🐑 Memiliki Hewan Ternak vs Jumlah Pasien")
@@ -231,7 +243,7 @@ if uploaded_file:
         plt.grid(axis="x", linestyle="--", alpha=0.6)
         for idx, (value, pct) in enumerate(zip(data_ternak["jumlah_pasien"], data_ternak["persentase"])):
             plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
-        tampilkan_gambar()
+        tampilkan_dan_download()
 
     elif pilihan == "🏠 Perbandingan Rumah Layak vs Tidak Layak (Jumlah)":
         st.subheader("🏠 Perbandingan Rumah Layak vs Tidak Layak (Jumlah)")
@@ -249,7 +261,7 @@ if uploaded_file:
         plt.grid(axis="y", linestyle="--", alpha=0.7)
         for i, v in enumerate(jumlah_rumah):
             plt.text(i, v + 2, str(v), ha="center", fontsize=10)
-        tampilkan_gambar()
+        tampilkan_dan_download()
 
     elif pilihan == "✅ Persentase Rumah Layak vs Tidak Layak":
         st.subheader("✅ Persentase Rumah Layak vs Tidak Layak")
@@ -266,7 +278,7 @@ if uploaded_file:
         plt.grid(axis="y", linestyle="--", alpha=0.7)
         for i, v in enumerate(persentase_rumah):
             plt.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
-        tampilkan_gambar()
+        tampilkan_dan_download()
 
     elif pilihan == "🧩 Pie Chart Rumah Layak vs Tidak Layak":
         st.subheader("🧩 Pie Chart Rumah Layak vs Tidak Layak")
@@ -284,7 +296,7 @@ if uploaded_file:
             autotext.set_fontsize(12)
             autotext.set_weight("bold")
         plt.title("Persentase Rumah Layak dan Tidak Layak", fontsize=14, fontweight="bold")
-        tampilkan_gambar()
+        tampilkan_dan_download()
 
     elif pilihan == "🚰 Pie Chart Sanitasi Layak vs Tidak Layak":
         st.subheader("🚰 Pie Chart Sanitasi Layak vs Tidak Layak")
@@ -303,7 +315,7 @@ if uploaded_file:
             autotext.set_fontsize(12)
             autotext.set_weight("bold")
         plt.title("Persentase Sanitasi Layak dan Tidak Layak", fontsize=14, fontweight="bold")
-        tampilkan_gambar()
+        tampilkan_dan_download()
 
     elif pilihan == "🚩 Pie Chart Perilaku Baik vs Tidak Baik":
         st.subheader("🚩 Pie Chart Perilaku Baik vs Tidak Baik")
@@ -322,7 +334,7 @@ if uploaded_file:
             autotext.set_fontsize(12)
             autotext.set_weight("bold")
         plt.title("Persentase Perilaku Baik dan Tidak Baik", fontsize=14, fontweight="bold")
-        tampilkan_gambar()
+        tampilkan_dan_download()
 
     elif pilihan == "🏚️ Kategori Rumah Tidak Layak (Detail)":
         st.subheader("🏚️ Kategori Rumah Tidak Layak (Detail)")
@@ -352,7 +364,7 @@ if uploaded_file:
         plt.ylabel("Kategori Rumah Tidak Layak", fontsize=12)
         plt.title("Kategori Rumah Tidak Layak", fontsize=14, fontweight='bold')
         plt.xlim(0, df_kategori_rumah['Jumlah'].max() + 5)
-        tampilkan_gambar()
+        tampilkan_dan_download()
 
     elif pilihan == "🚽 Kategori Sanitasi Tidak Layak (Detail)":
         st.subheader("🚽 Kategori Sanitasi Tidak Layak (Detail)")
@@ -389,7 +401,7 @@ if uploaded_file:
         plt.title("Kategori Sanitasi Tidak Layak", fontsize=14, fontweight='bold')
         plt.xticks(fontsize=11)
         plt.yticks(fontsize=11)
-        tampilkan_gambar()
+        tampilkan_dan_download()
 
     elif pilihan == "🚮 Kategori Perilaku Tidak Sehat (Detail)":
         st.subheader("🚮 Kategori Perilaku Tidak Sehat (Detail)")
@@ -417,9 +429,8 @@ if uploaded_file:
         plt.title("Kategori Perilaku Tidak Sehat", fontsize=14, fontweight='bold')
         plt.xticks(fontsize=11)
         plt.yticks(fontsize=11)
-        tampilkan_gambar()
+        tampilkan_dan_download()
 
-    # Pesan sukses di sidebar
     st.sidebar.success("Visualisasi selesai ditampilkan!")
 else:
     st.warning("Silakan upload file CSV di sidebar terlebih dahulu.")
