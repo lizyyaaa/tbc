@@ -8,9 +8,18 @@ from datetime import datetime
 # Atur tema Seaborn
 sns.set_theme(style="whitegrid")
 
+# Fungsi untuk menampilkan label kolom tanpa underscore
+def display_label(col_name: str) -> str:
+    return " ".join(word.capitalize() for word in col_name.split("_"))
+
 # Inisialisasi session_state untuk data gabungan jika belum ada
 if "data" not in st.session_state:
     st.session_state["data"] = pd.DataFrame()
+
+# Mempercantik sidebar dengan logo
+logo_url = "https://upload.wikimedia.org/wikipedia/commons/d/dc/Health_Dinas_Kesehatan_logo.png"  # Ganti dengan URL logo yang diinginkan
+st.sidebar.image(logo_url, use_column_width=True)
+st.sidebar.markdown("---")
 
 # Navigasi menggunakan radio button di sidebar
 nav = st.sidebar.radio("Navigasi", ["Home", "Visualisasi"])
@@ -58,18 +67,55 @@ if nav == "Home":
         st.session_state["data"] = df_csv.copy()
         st.info("Data CSV telah disimpan ke data gabungan.")
 
-    # Option dictionary untuk input data tambahan
+    # Option dictionary untuk input data tambahan (kecuali 'age' karena akan ditambahkan secara terpisah)
     option_dict = {
-        "puskesmas": ['Puskesmas Kedungmundu', 'Puskesmas Sekaran', 'Puskesmas Karangdoro', 'Puskesmas Rowosari', 'Puskesmas Bandarharjo', 'Puskesmas Pegandan', 'Puskesmas Mangkang', 'Puskesmas Candilama', 'Puskesmas Karang Malang', 'Puskesmas Ngaliyan', 'Puskesmas Lebdosari', 'Plamongan Sari', 'Puskesmas Purwoyoso', 'Puskesmas Bangetayu', 'Puskesmas Pandanaran', 'Puskesmas Mijen', 'Puskesmas Ngesrep', 'Puskesmas Karangayu', 'Puskesmas Tambakaji', 'Puskesmas Padangsari', 'Puskesmas Halmahera', 'Puskesmas Miroto', 'Puskesmas Genuk', 'bulusan', 'Puskesmas Bugangan', 'Puskesmas Tlogosari Wetan', 'Puskesmas Poncol', 'Puskesmas Pudak Payung', 'Puskesmas Kagok', 'Puskesmas Krobokan', 'Puskesmas Manyaran', 'Puskesmas Tlogosari Kulon', 'Puskesmas Karanganyar', 'Puskesmas Gunungpati', 'Puskesmas Ngemplak Simongan', 'Puskesmas Srondol', 'Puskesmas Gayamsari', 'Puskesmas Bulu Lor'],
+        "puskesmas": ['Puskesmas Kedungmundu', 'Puskesmas Sekaran', 'Puskesmas Karangdoro', 'Puskesmas Rowosari', 
+                      'Puskesmas Bandarharjo', 'Puskesmas Pegandan', 'Puskesmas Mangkang', 'Puskesmas Candilama', 
+                      'Puskesmas Karang Malang', 'Puskesmas Ngaliyan', 'Puskesmas Lebdosari', 'Plamongan Sari', 
+                      'Puskesmas Purwoyoso', 'Puskesmas Bangetayu', 'Puskesmas Pandanaran', 'Puskesmas Mijen', 
+                      'Puskesmas Ngesrep', 'Puskesmas Karangayu', 'Puskesmas Tambakaji', 'Puskesmas Padangsari', 
+                      'Puskesmas Halmahera', 'Puskesmas Miroto', 'Puskesmas Genuk', 'bulusan', 'Puskesmas Bugangan', 
+                      'Puskesmas Tlogosari Wetan', 'Puskesmas Poncol', 'Puskesmas Pudak Payung', 'Puskesmas Kagok', 
+                      'Puskesmas Krobokan', 'Puskesmas Manyaran', 'Puskesmas Tlogosari Kulon', 'Puskesmas Karanganyar', 
+                      'Puskesmas Gunungpati', 'Puskesmas Ngemplak Simongan', 'Puskesmas Srondol', 'Puskesmas Gayamsari', 
+                      'Puskesmas Bulu Lor'],
         "gender": ['L', 'P'],
         "city": ['Semarang', 'Luar Kota'],
-        "regency": ['Tembalang', 'Gunungpati', 'Semarang Timur', 'Semarang Utara', 'Gajahmungkur', 'Tugu', 'Candisari', 'Mijen', 'Ngaliyan', 'Semarang Barat', 'Pedurungan', 'Genuk', 'Semarang Selatan', 'Banyumanik', 'Luar Kota', 'Semarang Tengah', 'Gayamsari'],
-        "kelurahan": ['Tandang', 'Sukorejo', 'Sendangmulyo', 'Sambiroto', 'Kemijen', 'Rejomulyo', 'Sendangguwo', 'Meteseh', 'Dadapsari', 'Petompon', 'Karangrejo', 'Lempongsari', 'Bendungan', 'Mangkang Wetan', 'Karanganyar Gunung', 'Sampangan', 'Tanjungmas', 'Kalisegoro', 'Karangmalang', 'Wates', 'Sekaran', 'Jangli', 'Kalibanteng Kulon', 'Penggaron Kidul', 'Bandarharjo', 'Purwoyoso', 'Pedurungan Kidul', 'Kedungmundu', 'Patemon', 'Sembungharjo', 'Bringin', 'Randusari', 'Wonoplumbon', 'Rowosari', 'Ngesrep', 'Tinjomoyo', 'Karangayu', 'Podorejo', 'Karangroto', 'Kalipancur', 'Wonosari', 'Sumurboto', 'Plamongansari', 'Padangsari', 'Bambankerep', 'Mangkang Kulon', 'Mangunharjo', 'Pedalangan', 'Jomblang', 'Kedungpane', 'Ngadirgo', 'Cangkiran', 'Luar Kota', 'Rejosari', 'Jatingaleh', 'Tambakaji', 'Mlatibaru', 'Ngaliyan', 'Gabahan', 'Miroto', 'Genuksari', 'Salamanmloyo', 'Bulusan', 'Bugangan', 'Kebonagung', 'Bulustalan', 'Gisikdrono', 'Tambakharjo', 'Muktiharjo Lor', 'Ngijo', 'Mijen', 'Wonolopo', 'Jabungan', 'Kuningan', 'Tlogomulyo', 'Banjardowo', 'Bubakan', 'Gondoriyo', 'Bendan Duwur', 'Gajahmungkur', 'Bendan Ngisor', 'Purwodinatan', 'Kramas', 'Kudu', 'Mugassari', 'Penggaron Lor', 'Bangetayu Wetan', 'Bangunharjo', 'Kembangsari', 'Pandansari', 'Sekayu', 'Karangtempel', 'Gedawang', 'Karangkidul', 'Bojongsalaman', 'Trimulyo', 'Bangetayu Kulon', 'Gebangsari', 'Jatibarang', 'Tambangan', 'Wonodri', 'Pudakpayung', 'Pedurungan Tengah', 'Candi', 'Kranggan', 'Tlogosari Wetan', 'Tawangsari', 'Palebon', 'Mlatibaru', 'Tegalsari', 'Wonotingal', 'Manyaran', 'Kembangarum', 'Barusari', 'Krapyak', 'Gemah', 'Tugurejo', 'Mangunsari', 'Nongkosawit', 'Karangturi', 'Tlogosari Kulon', 'NgemplakSimongan', 'Krobokan', 'Srondol Wetan', 'Banyumanik', 'Gunungpati', 'Jagalan', 'Pindrikan Lor', 'Jatisari', 'Srondol Kulon', 'Randugarut', 'Kaligawe', 'Tawangmas', 'Brumbungan', 'Siwalan', 'Tambakrejo', 'Sadeng', 'Sawah Besar', 'Jatirejo', 'Plalangan', 'Pakintelan', 'Kauman', 'Pandean Lamper', 'Gayamsari', 'Sambirejo', 'Sarirejo', 'Bongsari', 'Pindrikan Kidul', 'Sumurejo', 'Terboyo Wetan', 'Muktiharjo Kidul', 'Pedurungan Lor', 'Kalicari', 'Cabean', 'Karanganyar', 'Panggung Lor', 'Purwosari', 'Panggung Kidul', 'Bulu Lor', 'Plombokan', 'Kaliwiru', 'Pangangan', 'Kalibanteng Kidul', 'Jrakah'],
+        "regency": ['Tembalang', 'Gunungpati', 'Semarang Timur', 'Semarang Utara', 'Gajahmungkur', 'Tugu', 'Candisari', 
+                    'Mijen', 'Ngaliyan', 'Semarang Barat', 'Pedurungan', 'Genuk', 'Semarang Selatan', 'Banyumanik', 
+                    'Luar Kota', 'Semarang Tengah', 'Gayamsari'],
+        "kelurahan": ['Tandang', 'Sukorejo', 'Sendangmulyo', 'Sambiroto', 'Kemijen', 'Rejomulyo', 'Sendangguwo', 
+                      'Meteseh', 'Dadapsari', 'Petompon', 'Karangrejo', 'Lempongsari', 'Bendungan', 'Mangkang Wetan', 
+                      'Karanganyar Gunung', 'Sampangan', 'Tanjungmas', 'Kalisegoro', 'Karangmalang', 'Wates', 'Sekaran', 
+                      'Jangli', 'Kalibanteng Kulon', 'Penggaron Kidul', 'Bandarharjo', 'Purwoyoso', 'Pedurungan Kidul', 
+                      'Kedungmundu', 'Patemon', 'Sembungharjo', 'Bringin', 'Randusari', 'Wonoplumbon', 'Rowosari', 
+                      'Ngesrep', 'Tinjomoyo', 'Karangayu', 'Podorejo', 'Karangroto', 'Kalipancur', 'Wonosari', 
+                      'Sumurboto', 'Plamongansari', 'Padangsari', 'Bambankerep', 'Mangkang Kulon', 'Mangunharjo', 
+                      'Pedalangan', 'Jomblang', 'Kedungpane', 'Ngadirgo', 'Cangkiran', 'Luar Kota', 'Rejosari', 
+                      'Jatingaleh', 'Tambakaji', 'Mlatibaru', 'Ngaliyan', 'Gabahan', 'Miroto', 'Genuksari', 'Salamanmloyo', 
+                      'Bulusan', 'Bugangan', 'Kebonagung', 'Bulustalan', 'Gisikdrono', 'Tambakharjo', 'Muktiharjo Lor', 
+                      'Ngijo', 'Mijen', 'Wonolopo', 'Jabungan', 'Kuningan', 'Tlogomulyo', 'Banjardowo', 'Bubakan', 
+                      'Gondoriyo', 'Bendan Duwur', 'Gajahmungkur', 'Bendan Ngisor', 'Purwodinatan', 'Kramas', 'Kudu', 
+                      'Mugassari', 'Penggaron Lor', 'Bangetayu Wetan', 'Bangunharjo', 'Kembangsari', 'Pandansari', 
+                      'Sekayu', 'Karangtempel', 'Gedawang', 'Karangkidul', 'Bojongsalaman', 'Trimulyo', 'Bangetayu Kulon', 
+                      'Gebangsari', 'Jatibarang', 'Tambangan', 'Wonodri', 'Pudakpayung', 'Pedurungan Tengah', 'Candi', 
+                      'Kranggan', 'Tlogosari Wetan', 'Tawangsari', 'Palebon', 'Mlatibaru', 'Tegalsari', 'Wonotingal', 
+                      'Manyaran', 'Kembangarum', 'Barusari', 'Krapyak', 'Gemah', 'Tugurejo', 'Mangunsari', 'Nongkosawit', 
+                      'Karangturi', 'Tlogosari Kulon', 'NgemplakSimongan', 'Krobokan', 'Srondol Wetan', 'Banyumanik', 
+                      'Gunungpati', 'Jagalan', 'Pindrikan Lor', 'Jatisari', 'Srondol Kulon', 'Randugarut', 'Kaligawe', 
+                      'Tawangmas', 'Brumbungan', 'Siwalan', 'Tambakrejo', 'Sadeng', 'Sawah Besar', 'Jatirejo', 'Plalangan', 
+                      'Pakintelan', 'Kauman', 'Pandean Lamper', 'Gayamsari', 'Sambirejo', 'Sarirejo', 'Bongsari', 
+                      'Pindrikan Kidul', 'Sumurejo', 'Terboyo Wetan', 'Muktiharjo Kidul', 'Pedurungan Lor', 'Kalicari', 
+                      'Cabean', 'Karanganyar', 'Panggung Lor', 'Purwosari', 'Panggung Kidul', 'Bulu Lor', 'Plombokan', 
+                      'Kaliwiru', 'Pangangan', 'Kalibanteng Kidul', 'Jrakah'],
         "type_tb": [1.0, 2.0],
         "status_hamil": ['Tidak', 'Ya'],
-        "pekerjaan": ['Tidak Bekerja', 'Ibu Rumah Tangga', 'Pegawai Swasta', 'Lainnya', 'Pelajar / Mahasiswa', 'Wiraswasta', 'Nelayan', 'Petani', 'Pensiunan', 'TNI / Polri'],
-        "pekerjaan_kepala_keluarga": ['Lainnya', 'Tidak Bekerja', 'Pegawai Swasta', 'Wiraswasta', 'Pelajar / Mahasiswa', 'Nelayan', 'Ibu Rumah Tangga', 'Petani', 'Pensiunan', 'PNS', 'TNI / Polri'],
-        "total_pendapatan_keluarga_per_bulan": ['1.000.000 - < 2.000.000', '2.000.000 - < 3.000.000', '< 1.000.000', '0', '3.000.000 - < 4.000.000', '>= 4.000.000'],
+        "pekerjaan": ['Tidak Bekerja', 'Ibu Rumah Tangga', 'Pegawai Swasta', 'Lainnya', 'Pelajar / Mahasiswa', 
+                      'Wiraswasta', 'Nelayan', 'Petani', 'Pensiunan', 'TNI / Polri'],
+        "pekerjaan_kepala_keluarga": ['Lainnya', 'Tidak Bekerja', 'Pegawai Swasta', 'Wiraswasta', 'Pelajar / Mahasiswa', 
+                                      'Nelayan', 'Ibu Rumah Tangga', 'Petani', 'Pensiunan', 'PNS', 'TNI / Polri'],
+        "total_pendapatan_keluarga_per_bulan": ['1.000.000 - < 2.000.000', '2.000.000 - < 3.000.000', '< 1.000.000', '0', 
+                                                '3.000.000 - < 4.000.000', '>= 4.000.000'],
         "pola_asuh": ['Orang Tua', 'Lainnya', 'Kakek / Nenek', 'Penitipan'],
         "status_pernikahan": ['Belum Kawin', 'Kawin', 'Cerai Mati', 'Cerai Hidup'],
         "status_pernikahan_orang_tua": ['Kawin', 'Cerai Mati', 'Belum Kawin', 'Cerai Hidup'],
@@ -82,41 +128,65 @@ if nav == "Home":
         "status_rumah": ['Lainnya', 'Pribadi', 'Orang Tua', 'Kontrak', 'Kost', 'Asrama'],
         "langit_langit": ['Tidak ada', 'Ada'],
         "lantai": ['Ubin/keramik/marmer', 'Tanah', 'Kurang Baik', 'Papan/anyaman bambu/plester retak berdebu', 'Baik'],
-        "dinding": ['Permanen (tembok pasangan batu bata yang diplester)', 'Semi permanen bata/batu yang tidak diplester/papan kayu', 'Bukan tembok (papan kayu/bambu/ilalang)'],
+        "dinding": ['Permanen (tembok pasangan batu bata yang diplester)', 
+                    'Semi permanen bata/batu yang tidak diplester/papan kayu', 
+                    'Bukan tembok (papan kayu/bambu/ilalang)'],
         "jendela_kamar_tidur": ['Tidak ada', 'Ada'],
         "jendela_ruang_keluarga": ['Ada', 'Tidak ada'],
-        "ventilasi": ['Kurang Baik', 'Ada,luas ventilasi < 10% dari luas lantai', 'Tidak Ada', 'Baik', 'Ada, luas ventilasi > 10% dari luas lantai'],
-        "lubang_asap_dapur": ['Ada, luas ventilasi < 10% dari luas lantai dapur', 'Tidak Ada', 'Ada, luas ventilasi > 10% luas lantai dapur/exhaust vent'],
-        "pencahayaan": ['Kurang Baik', 'Tidak terang', 'Baik', 'Terang', 'Kurang jelas untuk membaca normal', 'Kurang terang', 'Dapat digunakan untuk membaca normal'],
-        "sarana_air_bersih": ['Ada,bukan milik sendiri & memenuhi syarat kesehatan', 'Ada,milik sendiri & tidak memenuhi syarat kesehatan', 'Ada, bukan milik sendiri & tidak memenuhi syarat kesehatan', 'Ada,milik sendiri & memenuhi syarat kesehatan', 'Tidak Ada'],
-        "jamban": ['Ada tutup & septic tank', 'Ada, leher angsa', 'Ada,bukan leher angsa ada tutup & septic tank', 'Ada,bukan leher angsa ada tutup & dialirkan ke sungai', 'Tidak Ada', 'Ada, bukan leher angsa tidak bertutup & dialirkan ke sungai'],
-        "sarana_pembuangan_air_limbah": ['Ada, diresapkan ke selokan terbuka', 'Tidak ada, sehingga tergenang dan tidak teratur di halaman/belakang rumah', 'Ada, bukan milik sendiri & memenuhi syarat kesehatan', 'Ada, diresapkan tetapi mencemari sumber air (jarak <10m)', 'Ada, dialirkan ke selokan tertutup ("&"saluran kota) utk diolah lebih lanjut'],
-        "sarana_pembuangan_sampah": ['Ada, tetapi tidak kedap air dan tidak tertutup', 'Tidak Ada', 'Ada, kedap air dan tidak tertutup', 'Ada, kedap air dan tertutup'],
+        "ventilasi": ['Kurang Baik', 'Ada,luas ventilasi < 10% dari luas lantai', 'Tidak Ada', 'Baik', 
+                      'Ada, luas ventilasi > 10% dari luas lantai'],
+        "lubang_asap_dapur": ['Ada, luas ventilasi < 10% dari luas lantai dapur', 'Tidak Ada', 
+                              'Ada, luas ventilasi > 10% luas lantai dapur/exhaust vent'],
+        "pencahayaan": ['Kurang Baik', 'Tidak terang', 'Baik', 'Terang', 'Kurang jelas untuk membaca normal', 
+                        'Kurang terang', 'Dapat digunakan untuk membaca normal'],
+        "sarana_air_bersih": ['Ada,bukan milik sendiri & memenuhi syarat kesehatan', 
+                              'Ada,milik sendiri & tidak memenuhi syarat kesehatan', 
+                              'Ada, bukan milik sendiri & tidak memenuhi syarat kesehatan', 
+                              'Ada,milik sendiri & memenuhi syarat kesehatan', 'Tidak Ada'],
+        "jamban": ['Ada tutup & septic tank', 'Ada, leher angsa', 'Ada,bukan leher angsa ada tutup & septic tank', 
+                   'Ada,bukan leher angsa ada tutup & dialirkan ke sungai', 'Tidak Ada', 
+                   'Ada, bukan leher angsa tidak bertutup & dialirkan ke sungai'],
+        "sarana_pembuangan_air_limbah": ['Ada, diresapkan ke selokan terbuka', 
+                                         'Tidak ada, sehingga tergenang dan tidak teratur di halaman/belakang rumah', 
+                                         'Ada, bukan milik sendiri & memenuhi syarat kesehatan', 
+                                         'Ada, diresapkan tetapi mencemari sumber air (jarak <10m)', 
+                                         'Ada, dialirkan ke selokan tertutup ("&"saluran kota) utk diolah lebih lanjut'],
+        "sarana_pembuangan_sampah": ['Ada, tetapi tidak kedap air dan tidak tertutup', 'Tidak Ada', 
+                                     'Ada, kedap air dan tidak tertutup', 'Ada, kedap air dan tertutup'],
         "sampah": ['Lainnya (Sungai)', 'Dikelola Sendiri (Pilah Sampah)', 'Bakar', 'Petugas', 'dll'],
         "membuka_jendela_kamar_tidur": ['Tidak pernah dibuka', 'Kadang-kadang dibuka', 'Setiap hari dibuka'],
         "membuka_jendela_ruang_keluarga": ['Tidak pernah dibuka', 'Kadang-kadang dibuka', 'Setiap hari dibuka'],
         "membersihkan_rumah": ['Tidak pernah dibersihkan', 'Kadang-kadang', 'Setiap hari dibersihkan'],
         "membuang_tinja": ['Setiap hari ke jamban', 'Dibuang ke sungai/kebun/kolam/sembarangan'],
-        "membuang_sampah": ['Dibuang ke sungai/kebun/kolam/sembarangan / dibakar', 'Kadang-kadang dibuang ke tempat sampah', 'Dibuang ke tempat sampah/ada petugas sampah', 'Dilakukan pilah sampah/dikelola dengan baik'],
+        "membuang_sampah": ['Dibuang ke sungai/kebun/kolam/sembarangan / dibakar', 
+                            'Kadang-kadang dibuang ke tempat sampah', 
+                            'Dibuang ke tempat sampah/ada petugas sampah', 
+                            'Dilakukan pilah sampah/dikelola dengan baik'],
         "kebiasaan_ctps": ['Tidak pernah CTPS', 'Kadang-kadang CTPS', 'CTPS setiap aktivitas'],
         "memiliki_hewan_ternak": ['Tidak', 'Ya'],
         "kandang_hewan": []  # Kosong, bisa diisi teks
     }
-
+    
+    # Tampilan form input data manual tambahan
     st.markdown("## Form Input Data Manual Tambahan")
     with st.form(key="manual_form"):
         input_manual = {}
-        # Gunakan selectbox untuk kolom dengan opsi, text_input jika opsi kosong
+        # Untuk setiap kolom di option_dict, gunakan selectbox jika ada opsi
         for col, options in option_dict.items():
+            label = display_label(col)
             if options:
-                input_manual[col] = st.selectbox(f"{col}", options)
+                input_manual[col] = st.selectbox(f"{label}", options)
             else:
-                input_manual[col] = st.text_input(f"{col}", value="")
+                input_manual[col] = st.text_input(f"{label}", value="")
         # Kolom 'pasien' sebagai text_input untuk ID atau keterangan
         input_manual["pasien"] = st.text_input("Pasien (ID atau keterangan)", value="")
+        # Tambahkan kolom umur ("age") menggunakan number_input
+        input_manual["age"] = st.number_input("Age (Umur)", min_value=0, step=1, value=0)
         # Dua kolom tanggal: date_start dan tgl_kunjungan
-        input_manual["date_start"] = st.text_input("Tanggal Start (YYYY-MM-DD)", value=datetime.today().strftime("%Y-%m-%d"))
-        input_manual["tgl_kunjungan"] = st.text_input("Tanggal Kunjungan (YYYY-MM-DD)", value=datetime.today().strftime("%Y-%m-%d"))
+        input_manual["date_start"] = st.text_input("Tanggal Start (YYYY-MM-DD)", 
+                                                  value=datetime.today().strftime("%Y-%m-%d"))
+        input_manual["tgl_kunjungan"] = st.text_input("Tanggal Kunjungan (YYYY-MM-DD)", 
+                                                     value=datetime.today().strftime("%Y-%m-%d"))
         submitted_manual = st.form_submit_button(label="Submit Data Manual Tambahan")
     
     if submitted_manual:
@@ -248,7 +318,10 @@ elif nav == "Visualisasi":
                 "membuka_jendela_ruang_keluarga": {"Setiap hari dibuka": 5, "Kadang-kadang dibuka": 3, "Tidak pernah dibuka": 1},
                 "membersihkan_rumah": {"Setiap hari dibersihkan": 5, "Kadang-kadang": 3, "Tidak pernah dibersihkan": 1},
                 "membuang_tinja": {"Setiap hari ke jamban": 5, "Dibuang ke sungai/kebun/kolam/sembarangan": 1},
-                "membuang_sampah": {"Dibuang ke tempat sampah/ada petugas sampah": 5, "Dilakukan pilah sampah/dikelola dengan baik": 4, "Kadang-kadang dibuang ke tempat sampah": 3, "Dibuang ke sungai/kebun/kolam/sembarangan / dibakar": 1},
+                "membuang_sampah": {"Dibuang ke tempat sampah/ada petugas sampah": 5, 
+                                    "Dilakukan pilah sampah/dikelola dengan baik": 4, 
+                                    "Kadang-kadang dibuang ke tempat sampah": 3, 
+                                    "Dibuang ke sungai/kebun/kolam/sembarangan / dibakar": 1},
                 "kebiasaan_ctps": {"CTPS setiap aktivitas": 5, "Kadang-kadang CTPS": 3, "Tidak pernah CTPS": 1}
             }
 
@@ -292,7 +365,7 @@ elif nav == "Visualisasi":
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
-            # Lanjutkan visualisasi berdasarkan pilihan
+            # Visualisasi berdasarkan pilihan
             if pilihan == "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak":
                 st.subheader("📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
                 kategori_overall = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
@@ -437,6 +510,98 @@ elif nav == "Visualisasi":
                     autotext.set_fontsize(12)
                     autotext.set_weight("bold")
                 plt.title("Persentase Perilaku Baik dan Tidak Baik", fontsize=14, fontweight="bold")
+                tampilkan_dan_download()
+
+            elif pilihan == "🏚️ Kategori Rumah Tidak Layak (Detail)":
+                st.subheader("🏚️ Kategori Rumah Tidak Layak (Detail)")
+                df = df.fillna('')
+                total_rumah = len(df)
+                kategori_rumah_detail = {
+                    "Luas Ventilasi ≤ 10% Dari Luas Lantai": df['ventilasi'].str.contains('luas ventilasi < 10%', case=False, na=False).sum(),
+                    "Pencahayaan Kurang Terang, Kurang Jelas Untuk Membaca Normal": df['pencahayaan'].str.contains('kurang terang', case=False, na=False).sum(),
+                    "Lubang Asap Dapur Dengan Luas Ventilasi < 10% Dari Luas Lantai Dapur": df['lubang_asap_dapur'].str.contains('luas ventilasi < 10%', case=False, na=False).sum(),
+                    "Tidak Ada Jendela Di Rumah": df['ventilasi'].str.contains('tidak ada', case=False, na=False).sum(),
+                    "Tidak Ada Langit-Langit": df['langit_langit'].str.contains('tidak ada', case=False, na=False).sum(),
+                    "Lantai Papan/Anyaman Bambu/Plester Retak Berdebu": df['lantai'].str.contains('papan|anyaman bambu|plester retak', case=False, na=False).sum(),
+                    "Tidak Ada Lubang Asap Dapur": df['lubang_asap_dapur'].str.contains('tidak ada', case=False, na=False).sum(),
+                    "Lantai Tanah": df['lantai'].str.contains('tanah', case=False, na=False).sum(),
+                }
+                df_kategori_rumah = pd.DataFrame(list(kategori_rumah_detail.items()), columns=['Kategori', 'Jumlah'])
+                df_kategori_rumah['Persentase'] = (df_kategori_rumah['Jumlah'] / total_rumah) * 100
+                df_kategori_rumah = df_kategori_rumah.sort_values(by='Jumlah', ascending=False)
+
+                plt.figure(figsize=(8, 4))
+                colors = sns.color_palette("viridis", len(df_kategori_rumah))
+                ax = sns.barplot(x=df_kategori_rumah['Jumlah'], y=df_kategori_rumah['Kategori'], palette=colors)
+                for idx, (value, pct) in enumerate(zip(df_kategori_rumah['Jumlah'], df_kategori_rumah['Persentase'])):
+                    plt.text(value + 1, idx, f"{value} rumah ({pct:.1f}%)", va='center', fontsize=11)
+                plt.xlabel("Jumlah Rumah", fontsize=12)
+                plt.ylabel("Kategori Rumah Tidak Layak", fontsize=12)
+                plt.title("Kategori Rumah Tidak Layak", fontsize=14, fontweight='bold')
+                plt.xlim(0, df_kategori_rumah['Jumlah'].max() + 5)
+                tampilkan_dan_download()
+
+            elif pilihan == "🚽 Kategori Sanitasi Tidak Layak (Detail)":
+                st.subheader("🚽 Kategori Sanitasi Tidak Layak (Detail)")
+                total_rumah = len(df)
+                kategori_sanitasi_detail = {
+                    "Jamban Bukan Leher Angsa, Tidak Bertutup & Dialirkan Ke Sungai": df['jamban'].apply(lambda x: 'tidak bertutup' in str(x).lower() and 'sungai' in str(x).lower()).sum(),
+                    "Sarana Air Bersih Bukan Milik Sendiri & Tidak Memenuhi Syarat Kesehatan": df['sarana_air_bersih'].apply(lambda x: 'bukan milik sendiri' in str(x).lower() and 'tidak memenuhi' in str(x).lower()).sum(),
+                    "Tidak Ada Sarana Air Bersih": df['sarana_air_bersih'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
+                    "SPAL Diresapkan Tetapi Mencemari Sumber Air (Jarak <10m)": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'diresapkan' in str(x).lower() and 'mencemari' in str(x).lower()).sum(),
+                    "Tidak Ada Jamban": df['jamban'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
+                    "Jamban Bukan Leher Angsa, Ada Tutup & Dialirkan Ke Sungai": df['jamban'].apply(lambda x: 'bukan leher angsa' in str(x).lower() and 'tutup' in str(x).lower() and 'sungai' in str(x).lower()).sum(),
+                    "Tidak Ada Sarana Pembuangan Sampah": df['sarana_pembuangan_sampah'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
+                    "Tidak Ada SPAL": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'tidak ada' in str(x).lower()).sum(),
+                    "Sarana Air Bersih Milik Sendiri & Tidak Memenuhi Syarat Kesehatan": df['sarana_air_bersih'].apply(lambda x: 'milik sendiri' in str(x).lower() and 'tidak memenuhi' in str(x).lower()).sum(),
+                    "Jamban Bukan Leher Angsa, Ada Tutup & Septic Tank": df['jamban'].apply(lambda x: 'bukan leher angsa' in str(x).lower() and 'tutup' in str(x).lower() and 'septic tank' in str(x).lower()).sum(),
+                    "Sarana Pembuangan Sampah Tidak Kedap Air dan Tidak Tertutup": df['sarana_pembuangan_sampah'].apply(lambda x: 'tidak kedap' in str(x).lower() and 'tidak tertutup' in str(x).lower()).sum(),
+                    "SPAL Bukan Milik Sendiri & Memenuhi Syarat Kesehatan": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'bukan milik sendiri' in str(x).lower() and 'memenuhi' in str(x).lower()).sum(),
+                    "SPAL Diresapkan Ke Selokan Terbuka": df['sarana_pembuangan_air_limbah'].apply(lambda x: 'diresapkan' in str(x).lower() and 'selokan terbuka' in str(x).lower()).sum(),
+                    "Sarana Air Bersih Bukan Milik Sendiri & Memenuhi Syarat Kesehatan": df['sarana_air_bersih'].apply(lambda x: 'bukan milik sendiri' in str(x).lower() and 'memenuhi' in str(x).lower()).sum(),
+                    "Sarana Pembuangan Sampah Kedap Air dan Tidak Tertutup": df['sarana_pembuangan_sampah'].apply(lambda x: 'kedap air' in str(x).lower() and 'tidak tertutup' in str(x).lower()).sum()
+                }
+                df_kategori_sanitasi = pd.DataFrame(list(kategori_sanitasi_detail.items()), columns=['Kategori', 'Jumlah'])
+                df_kategori_sanitasi['Persentase'] = (df_kategori_sanitasi['Jumlah'] / total_rumah) * 100
+                df_kategori_sanitasi = df_kategori_sanitasi.sort_values(by='Jumlah', ascending=False)
+
+                plt.figure(figsize=(8, 4))
+                colors = sns.color_palette("crest", len(df_kategori_sanitasi))
+                ax = sns.barplot(x=df_kategori_sanitasi['Jumlah'], y=df_kategori_sanitasi['Kategori'], palette=colors, edgecolor="black")
+                for idx, (value, pct) in enumerate(zip(df_kategori_sanitasi['Jumlah'], df_kategori_sanitasi['Persentase'])):
+                    plt.text(value + 1, idx, f"{value} rumah ({pct:.1f}%)", va='center', fontsize=11, color='black')
+                plt.xlabel("Jumlah Rumah", fontsize=12)
+                plt.ylabel("Kategori Sanitasi Tidak Layak", fontsize=12)
+                plt.title("Kategori Sanitasi Tidak Layak", fontsize=14, fontweight='bold')
+                plt.xticks(fontsize=11)
+                plt.yticks(fontsize=11)
+                tampilkan_dan_download()
+
+            elif pilihan == "🚮 Kategori Perilaku Tidak Sehat (Detail)":
+                st.subheader("🚮 Kategori Perilaku Tidak Sehat (Detail)")
+                total_rumah = len(df)
+                kategori_perilaku_detail = {
+                    "BAB Di Sungai / Kebun / Kolam / Sembarangan": df['membuang_tinja'].apply(lambda x: any(word in str(x).lower() for word in ['sungai', 'kebun', 'kolam', 'sembarangan'])).sum(),
+                    "Tidak CTPS": df['kebiasaan_ctps'].apply(lambda x: 'tidak' in str(x).lower()).sum(),
+                    "Tidak Pernah Membersihkan Rumah dan Halaman": df['membersihkan_rumah'].apply(lambda x: 'tidak pernah' in str(x).lower()).sum(),
+                    "Buang Sampah Ke Sungai / Kebun / Kolam / Sembarangan / Dibakar": df['membuang_sampah'].apply(lambda x: any(word in str(x).lower() for word in ['sungai', 'kebun', 'kolam', 'sembarangan', 'dibakar'])).sum(),
+                    "Tidak Pernah Buka Jendela Ruang Keluarga": df['membuka_jendela_ruang_keluarga'].apply(lambda x: 'tidak pernah' in str(x).lower()).sum(),
+                    "Tidak Pernah Buka Jendela Kamar Tidur": df['membuka_jendela_kamar_tidur'].apply(lambda x: 'tidak pernah' in str(x).lower()).sum(),
+                }
+                df_kategori_perilaku = pd.DataFrame(list(kategori_perilaku_detail.items()), columns=['Kategori', 'Jumlah'])
+                df_kategori_perilaku['Persentase'] = (df_kategori_perilaku['Jumlah'] / total_rumah) * 100
+                df_kategori_perilaku = df_kategori_perilaku.sort_values(by='Jumlah', ascending=False)
+
+                plt.figure(figsize=(8, 4))
+                colors = sns.color_palette("Blues", len(df_kategori_perilaku))
+                ax = sns.barplot(x=df_kategori_perilaku['Jumlah'], y=df_kategori_perilaku['Kategori'], palette=colors, edgecolor="black")
+                for idx, (value, pct) in enumerate(zip(df_kategori_perilaku['Jumlah'], df_kategori_perilaku['Persentase'])):
+                    plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=11, color='black')
+                plt.xlabel("Jumlah Rumah", fontsize=12)
+                plt.ylabel("Kategori Perilaku Tidak Sehat", fontsize=12)
+                plt.title("Kategori Perilaku Tidak Sehat", fontsize=14, fontweight='bold')
+                plt.xticks(fontsize=11)
+                plt.yticks(fontsize=11)
                 tampilkan_dan_download()
 
             st.sidebar.success("Visualisasi selesai ditampilkan!")
