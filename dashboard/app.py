@@ -451,8 +451,7 @@ elif nav == "📈 Visualisasi":
                 for idx, (value, pct) in enumerate(zip(data_ternak["jumlah_pasien"], data_ternak["persentase"])):
                     plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
                 tampilkan_dan_download()
-            
-           elif pilihan == "🏠 Rumah Layak & Tidak Layak (Chart + Detail)":
+            elif pilihan == "🏠 Rumah Layak & Tidak Layak (Chart + Detail)":
                 st.subheader("🏠 Rumah Layak & Tidak Layak")
                 # --- Pie Chart Rumah Layak vs Tidak Layak ---
                 labels = ["Layak", "Tidak Layak"]
