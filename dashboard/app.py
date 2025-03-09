@@ -4,20 +4,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 
-# 1) Nonaktifkan atau atur tema bawaan Streamlit agar teks tidak berwarna biru
-st.set_page_config(
-    page_title="Dashboard TBC",
-    layout="wide",
-    initial_sidebar_state="expanded",
-    theme={
-        "primaryColor": "#FF4B4B",  # warna utama (contoh merah)
-        "backgroundColor": "#FFFFFF",
-        "secondaryBackgroundColor": "#F0F2F6",
-        "textColor": "#000000",     # teks hitam
-        "font": "sans serif"
-    }
-)
-
 # 2) Atur tema Seaborn
 sns.set_theme(style="whitegrid")
 
