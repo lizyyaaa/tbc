@@ -17,7 +17,7 @@ if "data" not in st.session_state:
     st.session_state["data"] = pd.DataFrame()
 
 # Mempercantik sidebar dengan logo
-logo_url = "https://upload.wikimedia.org/wikipedia/commons/d/dc/Health_Dinas_Kesehatan_logo.png"  # Ganti dengan URL logo yang diinginkan
+logo_url = "https://raw.githubusercontent.com/lizyyaaa/tbc/main/dashboard/download%20(1).png"  # Ganti dengan URL logo yang diinginkan
 st.sidebar.image(logo_url, use_container_width=True)
 st.sidebar.markdown("---")
 
