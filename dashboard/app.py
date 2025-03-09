@@ -570,7 +570,7 @@ elif nav == "📈 Visualisasi":
             
             elif pilihan == "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)":
                 st.subheader("🚩 Perilaku Baik & Tidak Sehat")
-                # Pie Chart Perilaku Baik vs Tidak Baik
+                # --- Pie Chart Perilaku Baik vs Tidak Baik ---
                 persentase_baik_perilaku = 100 - persentase_tidak_baik_perilaku
                 labels_perilaku = ["Baik", "Tidak Baik"]
                 sizes_perilaku = [persentase_baik_perilaku, persentase_tidak_baik_perilaku]
@@ -587,15 +587,37 @@ elif nav == "📈 Visualisasi":
                     autotext.set_weight("bold")
                 plt.title("Persentase Perilaku Baik dan Tidak Baik", fontsize=14, fontweight="bold")
                 tampilkan_dan_download()
-            
-                # Detail Kategori Perilaku Tidak Sehat
+                
+                # --- Detail: Bar Chart Kategori Perilaku Tidak Sehat ---
                 st.markdown("#### Detail Kategori Perilaku Tidak Sehat")
-                # Misalnya, tampilkan tabel atau chart detail untuk perilaku tidak sehat
-                if "kategori_perilaku" in df.columns:
-                    detail_perilaku = df[df["kategori_perilaku"] == "Tidak Sehat"].groupby("sub_kategori_perilaku")["pasien"].count().reset_index()
-                    detail_perilaku.columns = ["Sub Kategori Perilaku", "Jumlah Pasien"]
-                    st.dataframe(detail_perilaku)
-                else:
-                    st.info("Data detail kategori perilaku tidak tersedia.")
+                total_rumah = len(df)
+                # Hitung jumlah rumah yang memiliki setiap kategori perilaku tidak sehat
+                kategori_perilaku_detail = {
+                    "BAB di sungai / kebun / kolam / sembarangan": df['membuang_tinja'].apply(lambda x: any(word in str(x).lower() for word in ['sungai', 'kebun', 'kolam', 'sembarangan'])).sum(),
+                    "Tidak CTPS": df['kebiasaan_ctps'].apply(lambda x: 'tidak' in str(x).lower()).sum(),
+                    "Tidak pernah membersihkan rumah dan halaman": df['membersihkan_rumah'].apply(lambda x: 'tidak pernah' in str(x).lower()).sum(),
+                    "Buang sampah ke sungai / kebun / kolam / sembarangan / dibakar": df['membuang_sampah'].apply(lambda x: any(word in str(x).lower() for word in ['sungai', 'kebun', 'kolam', 'sembarangan', 'dibakar'])).sum(),
+                    "Tidak pernah buka jendela ruang keluarga": df['membuka_jendela_ruang_keluarga'].apply(lambda x: 'tidak pernah' in str(x).lower()).sum(),
+                    "Tidak pernah buka jendela kamar tidur": df['membuka_jendela_kamar_tidur'].apply(lambda x: 'tidak pernah' in str(x).lower()).sum(),
+                }
+                # Hapus kategori dengan nilai 0
+                kategori_perilaku_detail = {k: v for k, v in kategori_perilaku_detail.items() if v > 0}
+                df_perilaku_detail = pd.DataFrame(list(kategori_perilaku_detail.items()), columns=['Kategori', 'Jumlah'])
+                df_perilaku_detail['Persentase'] = (df_perilaku_detail['Jumlah'] / total_rumah) * 100
+                df_perilaku_detail = df_perilaku_detail.sort_values(by='Jumlah', ascending=False)
+                
+                sns.set_style("whitegrid")
+                plt.figure(figsize=(12, 7))
+                colors_detail = sns.color_palette("Blues", len(df_perilaku_detail))
+                ax = sns.barplot(x=df_perilaku_detail['Jumlah'], y=df_perilaku_detail['Kategori'], palette=colors_detail, edgecolor="black")
+                for index, (value, percent) in enumerate(zip(df_perilaku_detail['Jumlah'], df_perilaku_detail['Persentase'])):
+                    plt.text(value + 1, index, f"{value} ({percent:.1f}%)", va='center', fontsize=11, color='black')
+                plt.xlabel("Jumlah Rumah", fontsize=12)
+                plt.ylabel("Kategori Perilaku Tidak Sehat", fontsize=12)
+                plt.title("Kategori Perilaku Tidak Sehat", fontsize=14, fontweight='bold')
+                plt.xticks(fontsize=11)
+                plt.yticks(fontsize=11)
+                tampilkan_dan_download()
+
             
             st.sidebar.success("Visualisasi selesai ditampilkan!")
