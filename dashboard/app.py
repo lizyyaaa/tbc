@@ -11,13 +11,39 @@ sns.set_theme(style="whitegrid")
 # Judul utama dengan emoji
 st.title("📊 Dashboard Analisis Data TBC")
 
-# Sidebar dengan judul dan emoji
+# Sidebar: Input & Navigasi
 st.sidebar.header("⚙️ Input & Navigasi")
 
-# Upload File CSV di sidebar
+# Widget Upload CSV di sidebar
 uploaded_file = st.sidebar.file_uploader("📂 Upload file CSV", type=["csv"])
 
-# Daftar visualisasi dengan "Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak" di posisi pertama
+# Fungsi input data manual melalui sidebar
+def input_manual_data():
+    st.sidebar.markdown("### Input Data Manual")
+    # Sesuaikan kolom sesuai data Anda
+    pasien = st.sidebar.number_input("Jumlah Pasien", min_value=0, step=1, value=0)
+    date_start = st.sidebar.text_input("Tanggal (YYYY-MM-DD)", value="2023-01-01")
+    puskesmas = st.sidebar.text_input("Puskesmas", value="Puskesmas A")
+    gender = st.sidebar.selectbox("Gender", options=["Laki-laki", "Perempuan"])
+    
+    if st.sidebar.button("Tambahkan Data Manual"):
+        try:
+            date_start = pd.to_datetime(date_start)
+        except Exception as e:
+            st.sidebar.error("Format tanggal tidak valid. Gunakan format YYYY-MM-DD.")
+            return None
+        data_manual = pd.DataFrame({
+            "pasien": [pasien],
+            "date_start": [date_start],
+            "puskesmas": [puskesmas],
+            "gender": [gender]
+        })
+        st.sidebar.success("Data manual berhasil ditambahkan!")
+        return data_manual
+    else:
+        return None
+
+# Pilihan visualisasi (urutan pilihan: pilihan pertama "Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
 visualisasi_list = [
     "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak",
     "📈 Kebiasaan CTPS vs Jumlah Pasien",
@@ -31,11 +57,9 @@ visualisasi_list = [
     "🚽 Kategori Sanitasi Tidak Layak (Detail)",
     "🚮 Kategori Perilaku Tidak Sehat (Detail)"
 ]
-
-# Pilihan visualisasi
 pilihan = st.sidebar.selectbox("Pilih Visualisasi", visualisasi_list)
 
-# Fungsi untuk menyimpan gambar ke BytesIO dan menampilkan tombol download
+# Fungsi untuk download gambar chart
 def download_chart():
     buffer = BytesIO()
     plt.savefig(buffer, format='png', bbox_inches='tight')
@@ -48,30 +72,60 @@ def download_chart():
     )
     buffer.close()
 
-# Jika file diupload, lanjutkan
+# Fungsi untuk menampilkan chart dan download
+def tampilkan_dan_download():
+    st.pyplot(plt.gcf())
+    download_chart()
+    plt.clf()
+
+# --- Pengolahan Data ---
+# Baca data dari CSV jika diupload, jika tidak, buat DataFrame kosong
 if uploaded_file:
-    # Baca data
-    df = pd.read_csv(uploaded_file, sep=';', encoding='utf-8')
-    
-    # --- Preprocessing ---
+    df_csv = pd.read_csv(uploaded_file, sep=';', encoding='utf-8')
+else:
+    df_csv = pd.DataFrame()
+
+# Ambil input manual data
+data_manual = input_manual_data()
+
+# Gabungkan data: jika data manual ada dan CSV tidak kosong, gabungkan keduanya
+if data_manual is not None:
+    if not df_csv.empty:
+        df = pd.concat([df_csv, data_manual], ignore_index=True)
+    else:
+        df = data_manual.copy()
+else:
+    df = df_csv.copy()
+
+# Tampilkan data gabungan di main page
+if not df.empty:
+    st.subheader("Data Gabungan")
+    st.dataframe(df)
+else:
+    st.info("Belum ada data. Upload file CSV atau masukkan data manual.")
+
+# Lanjutkan hanya jika data tidak kosong
+if not df.empty:
+    # Preprocessing dasar: imputasi missing value dan hapus duplikasi
     kolom_numerik = df.select_dtypes(include=['number']).columns
     kolom_kategori = df.select_dtypes(include=['object']).columns
     df[kolom_kategori] = df[kolom_kategori].apply(lambda x: x.fillna(x.mode()[0]))
     df[kolom_numerik] = df[kolom_numerik].apply(lambda x: x.fillna(x.mean()))
     df = df.drop_duplicates()
-
-    # Pastikan kolom date_start format datetime
+    
+    # Ubah kolom date_start jika ada
     if "date_start" in df.columns:
         df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
         df["year_month"] = df["date_start"].dt.to_period("M").astype(str)
-
-    # Definisi kategori
+    
+    # --- Definisi Kategori untuk Skor ---
+    # Sesuaikan dengan struktur data Anda
     kategori_rumah = [
         'langit_langit', 'lantai', 'dinding', 'jendela_kamar_tidur',
         'jendela_ruang_keluarga', 'ventilasi', 'lubang_asap_dapur', 'pencahayaan'
     ]
     kategori_sanitasi = [
-        'sarana_air_bersih', 'jamban', 'sarana_pembuangan_air_limbah', 
+        'sarana_air_bersih', 'jamban', 'sarana_pembuangan_air_limbah',
         'sarana_pembuangan_sampah', 'sampah'
     ]
     kategori_perilaku = [
@@ -79,8 +133,8 @@ if uploaded_file:
         'membuka_jendela_ruang_keluarga', 'membersihkan_rumah', 'membuang_tinja',
         'membuang_sampah', 'kebiasaan_ctps'
     ]
-
-    # Pisahkan data
+    
+    # Pisahkan data berdasarkan kategori (jika kolom tidak ada, mungkin harus disesuaikan)
     df_rumah = df[kategori_rumah].dropna()
     df_sanitasi = df[kategori_sanitasi].dropna()
     df_perilaku = df[kategori_perilaku].dropna()
@@ -99,7 +153,7 @@ if uploaded_file:
         df_sub["Skor Kelayakan"] = skor
         return df_sub
 
-    # Bobot
+    # Bobot untuk masing-masing kategori
     bobot_rumah = {
         "langit_langit": {"Ada": 5, "Tidak ada": 1},
         "lantai": {"Ubin/keramik/marmer": 5, "Baik": 4, "Kurang Baik": 3, "Papan/Anyaman Bambu/Plester Retak": 2, "Tanah": 1},
@@ -183,13 +237,7 @@ if uploaded_file:
         """
     )
 
-    # Fungsi untuk menampilkan chart dan download
-    def tampilkan_dan_download():
-        st.pyplot(plt.gcf())
-        download_chart()
-        plt.clf()
-
-    # --- Visualisasi Berdasarkan Pilihan ---
+    # --- Visualisasi Berdasarkan Pilihan Sidebar ---
     if pilihan == "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak":
         st.subheader("📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
         kategori_overall = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
@@ -433,4 +481,4 @@ if uploaded_file:
 
     st.sidebar.success("Visualisasi selesai ditampilkan!")
 else:
-    st.warning("Silakan upload file CSV di sidebar terlebih dahulu.")
+    st.warning("Silakan upload file CSV atau masukkan data manual di sidebar terlebih dahulu.")
