@@ -703,31 +703,23 @@ elif nav == "📈 Visualisasi":
                         
             elif pilihan == "🟢 Status Gizi dan Imunisasi":
                 st.subheader("🟢 Distribusi Status Gizi dan Imunisasi (Gabungan)")
-                # Pastikan kolom yang diperlukan ada
-                if "status_gizi" not in df.columns or "status_imunisasi" not in df.columns:
-                    st.warning("Kolom status_gizi dan/atau status_imunisasi tidak ditemukan di data.")
-                else:
-                    # Kelompokkan data untuk status gizi
-                    gizi_counts = df.groupby("status_gizi")["pasien"].count().reset_index()
-                    gizi_counts.columns = ["Kategori", "Jumlah"]
-                    gizi_counts["Type"] = "Status Gizi"
-                    
-                    # Kelompokkan data untuk status imunisasi
-                    imunisasi_counts = df.groupby("status_imunisasi")["pasien"].count().reset_index()
-                    imunisasi_counts.columns = ["Kategori", "Jumlah"]
-                    imunisasi_counts["Type"] = "Status Imunisasi"
-                    
-                    # Gabungkan kedua dataframe
-                    df_combined = pd.concat([gizi_counts, imunisasi_counts], ignore_index=True)
-                    
-                    # Plot grouped bar chart menggunakan Seaborn
-                    plt.figure(figsize=(14, 7))
-                    ax = sns.barplot(x="Kategori", y="Jumlah", hue="Type", data=df_combined, palette="viridis")
-                    plt.title("Distribusi Status Gizi dan Imunisasi", fontsize=16, fontweight="bold")
-                    plt.xlabel("Kategori", fontsize=14)
-                    plt.ylabel("Jumlah Pasien", fontsize=14)
-                    plt.xticks(rotation=45, fontsize=12)
-                    plt.yticks(fontsize=12)
+                # Pastikan kolom "status_imunisasi" dan "status_gizi" ada  
+                if "status_imunisasi" not in df.columns:  
+                    st.warning("Kolom 'status_imunisasi' tidak ditemukan di data.")  
+                elif "status_gizi" not in df.columns:  
+                    st.warning("Kolom 'status_gizi' tidak ditemukan di data.")  
+                else:  
+                    # Grouping berdasarkan status imunisasi dan status gizi  
+                    imunisasi_gizi = df.groupby(["status_imunisasi", "status_gizi"]).size().reset_index(name="count")  
+            
+                    # Plot menggunakan Seaborn  
+                    fig, ax = plt.subplots(figsize=(10, 5))  
+                    sns.barplot(x="status_imunisasi", y="count", hue="status_gizi", data=imunisasi_gizi, palette="pastel", ax=ax)  
+                    ax.set_xlabel("Status Imunisasi")  
+                    ax.set_ylabel("Jumlah")  
+                    ax.set_title("Distribusi Status Imunisasi berdasarkan Status Gizi")  
+                    plt.xticks(rotation=45)  
+            
                     tampilkan_dan_download()
 
                         
