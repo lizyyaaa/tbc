@@ -471,11 +471,12 @@ elif nav == "📈 Visualisasi":
                 plt.title("Persentase Rumah Layak dan Tidak Layak", fontsize=14, fontweight="bold")
                 tampilkan_dan_download()
                 
-                # --- Detail: Tampilkan Bar Chart Detail Kategori Rumah Tidak Layak ---
+                # --- Detail: Bar Chart Kategori Rumah Tidak Layak ---
                 st.markdown("#### Detail Kategori Rumah Tidak Layak")
-                # Misalnya, hitung jumlah pasien berdasarkan kategori rumah tidak layak
+                # Kode detail berikut menggunakan filtering pada kolom yang bersangkutan.
+                # Jika kolom "kategori_rumah" tidak ada, Anda bisa menyesuaikannya sesuai dengan struktur data.
                 if "kategori_rumah" in df.columns:
-                    # Hitung jumlah rumah per sub kategori
+                    # Hitung jumlah rumah per sub kategori berdasarkan beberapa kriteria
                     kategori_rumah_detail = {
                         "Luas ventilasi ≤ 10% dari luas lantai": df['ventilasi'].str.contains('luas ventilasi < 10%', case=False, na=False).sum(),
                         "Pencahayaan kurang terang, kurang jelas untuk membaca normal": df['pencahayaan'].str.contains('kurang terang', case=False, na=False).sum(),
@@ -507,6 +508,7 @@ elif nav == "📈 Visualisasi":
                     plt.clf()
                 else:
                     st.info("Data detail kategori rumah tidak layak tidak tersedia.")
+
 
             
             elif pilihan == "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)":
