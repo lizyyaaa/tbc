@@ -397,7 +397,7 @@ elif nav == "📈 Visualisasi":
                 "🩺 Jumlah Pasien per Puskesmas",
                 "📅 Tren Date Start Pasien",
                 "📊 Distribusi Usia",
-                "📊 Status Gizi dan Imunisasi"
+                "🟢 Status Gizi dan Imunisas"
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
@@ -701,44 +701,37 @@ elif nav == "📈 Visualisasi":
                         plt.xticks(rotation=45)
                         tampilkan_dan_download()  # Menampilkan chart dan opsi download
                         
-            elif pilihan == "📊 Status Gizi dan Imunisasi":
-                st.subheader("📊 Distribusi Status Gizi dan Imunisasi")
-                # Pastikan kolom yang diperlukan ada dan data tidak kosong
+            elif pilihan == "🟢 Status Gizi dan Imunisasi":
+                st.subheader("🟢 Distribusi Status Gizi dan Imunisasi (Gabungan)")
+                # Pastikan kolom yang diperlukan ada
                 if "status_gizi" not in df.columns or "status_imunisasi" not in df.columns:
-                    st.warning("Kolom status_gizi dan/atau status_imunisasi tidak ditemukan.")
+                    st.warning("Kolom status_gizi dan/atau status_imunisasi tidak ditemukan di data.")
                 else:
                     # Kelompokkan data untuk status gizi
                     gizi_counts = df.groupby("status_gizi")["pasien"].count().reset_index()
-                    gizi_counts.columns = ["Status Gizi", "Jumlah"]
+                    gizi_counts.columns = ["Kategori", "Jumlah"]
+                    gizi_counts["Type"] = "Status Gizi"
+                    
                     # Kelompokkan data untuk status imunisasi
                     imunisasi_counts = df.groupby("status_imunisasi")["pasien"].count().reset_index()
-                    imunisasi_counts.columns = ["Status Imunisasi", "Jumlah"]
+                    imunisasi_counts.columns = ["Kategori", "Jumlah"]
+                    imunisasi_counts["Type"] = "Status Imunisasi"
                     
-                    # Buat figure dengan 2 subplots (satu untuk status gizi dan satu untuk status imunisasi)
-                    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+                    # Gabungkan kedua dataframe
+                    df_combined = pd.concat([gizi_counts, imunisasi_counts], ignore_index=True)
                     
-                    # Plot status gizi
-                    sns.barplot(x="Jumlah", y="Status Gizi", data=gizi_counts, palette="pastel", ax=ax1)
-                    ax1.set_title("Distribusi Status Gizi", fontsize=14, fontweight="bold")
-                    ax1.set_xlabel("Jumlah Pasien", fontsize=12)
-                    ax1.set_ylabel("Status Gizi", fontsize=12)
-                    ax1.grid(axis="x", linestyle="--", alpha=0.6)
-                    # Tambahkan label di setiap bar status gizi
-                    for index, row in gizi_counts.iterrows():
-                        ax1.text(row["Jumlah"] + 0.5, index, f"{row['Jumlah']}", va="center", fontsize=10, color="black")
-                    
-                    # Plot status imunisasi
-                    sns.barplot(x="Jumlah", y="Status Imunisasi", data=imunisasi_counts, palette="muted", ax=ax2)
-                    ax2.set_title("Distribusi Status Imunisasi", fontsize=14, fontweight="bold")
-                    ax2.set_xlabel("Jumlah Pasien", fontsize=12)
-                    ax2.set_ylabel("Status Imunisasi", fontsize=12)
-                    ax2.grid(axis="x", linestyle="--", alpha=0.6)
-                    # Tambahkan label di setiap bar status imunisasi
-                    for index, row in imunisasi_counts.iterrows():
-                        ax2.text(row["Jumlah"] + 0.5, index, f"{row['Jumlah']}", va="center", fontsize=10, color="black")
-                    
-                    # Tampilkan grafik dan tombol download
+                    # Plot grouped bar chart menggunakan Seaborn
+                    plt.figure(figsize=(14, 7))
+                    ax = sns.barplot(x="Kategori", y="Jumlah", hue="Type", data=df_combined, palette="viridis")
+                    plt.title("Distribusi Status Gizi dan Imunisasi", fontsize=16, fontweight="bold")
+                    plt.xlabel("Kategori", fontsize=14)
+                    plt.ylabel("Jumlah Pasien", fontsize=14)
+                    plt.xticks(rotation=45, fontsize=12)
+                    plt.yticks(fontsize=12)
                     tampilkan_dan_download()
+
+                        
+           
 
 
             
