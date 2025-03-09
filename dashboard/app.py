@@ -395,7 +395,8 @@ elif nav == "📈 Visualisasi":
                 "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)",
                 "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)",
                 "🩺 Jumlah Pasien per Puskesmas",
-                "📅 Tren Date Start Pasien"
+                "📅 Tren Date Start Pasien",
+                "📊 Distribusi Usia per Gender (Clustering)"
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
@@ -669,6 +670,37 @@ elif nav == "📈 Visualisasi":
                     plt.text(row["year_month"], row["pasien"] + 2, f"{row['pasien']}", ha="center", fontsize=10, color="black")
                 
                 tampilkan_dan_download()
+                
+            elif pilihan == "📊 Distribusi Usia per Gender (Clustering)":
+                st.subheader("📊 Distribusi Usia per Gender (Clustering)")
+                
+                # Pastikan kolom "age" ada dan bersifat numerik
+                if "age" not in df.columns:
+                    st.warning("Kolom 'age' tidak ditemukan di data.")
+                else:
+                    df["age"] = pd.to_numeric(df["age"], errors="coerce")
+                    usia = df["age"].dropna()
+                    if usia.empty:
+                        st.warning("Data usia kosong.")
+                    else:
+                        # Definisikan rentang usia (bins) dan labelnya
+                        bins = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 100]
+                        labels = [f"{bins[i]}-{bins[i+1]}" for i in range(len(bins)-1)]
+                        df["age_group"] = pd.cut(df["age"], bins=bins, labels=labels, right=False)
+                        
+                        # Grouping berdasarkan age_group dan gender
+                        age_gender = df.groupby(["age_group", "gender"]).size().reset_index(name="count")
+                        st.write("Data Distribusi Usia per Gender:", age_gender)
+                        
+                        # Plot menggunakan Seaborn
+                        fig_age, ax_age = plt.subplots(figsize=(10, 5))
+                        sns.barplot(x="age_group", y="count", hue="gender", data=age_gender, palette="pastel", ax=ax_age)
+                        ax_age.set_xlabel("Rentang Usia")
+                        ax_age.set_ylabel("Jumlah")
+                        ax_age.set_title("Distribusi Usia per Gender (Clustering)")
+                        plt.xticks(rotation=45)
+                        st.pyplot(fig_age)
+                        tampilkan_dan_download()
 
             
             st.sidebar.success("Visualisasi selesai ditampilkan!")
