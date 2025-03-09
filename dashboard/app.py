@@ -492,14 +492,14 @@ elif nav == "📈 Visualisasi":
                 df_detail = df_detail.sort_values(by='Jumlah', ascending=False)
                 
                 sns.set_style("whitegrid")
-                plt.figure(figsize=(12, 7))
+                plt.figure(figsize=(14, 9))
                 colors_detail = sns.color_palette("viridis", len(df_detail))
                 ax = sns.barplot(x=df_detail['Jumlah'], y=df_detail['Kategori'], palette=colors_detail)
                 for index, (value, percent) in enumerate(zip(df_detail['Jumlah'], df_detail['Persentase'])):
                     plt.text(value + 1, index, f"{value} rumah ({percent:.1f}%)", va='center')
-                plt.xlabel("Jumlah Rumah", fontsize=12)
-                plt.ylabel("Kategori Rumah Tidak Layak", fontsize=12)
-                plt.title("Kategori Rumah Tidak Layak", fontsize=14, fontweight='bold')
+                plt.xlabel("Jumlah Rumah", fontsize=14)
+                plt.ylabel("Kategori Rumah Tidak Layak", fontsize=14)
+                plt.title("Kategori Rumah Tidak Layak", fontsize=16, fontweight='bold')
                 plt.xlim(0, df_detail['Jumlah'].max() + 5)
                 tampilkan_dan_download()
 
@@ -555,16 +555,16 @@ elif nav == "📈 Visualisasi":
                 df_sanitasi_detail = df_sanitasi_detail.sort_values(by='Jumlah', ascending=False)
                 
                 sns.set_style("whitegrid")
-                plt.figure(figsize=(12, 7))
+                plt.figure(figsize=(14, 9))
                 colors_detail = sns.color_palette("crest", len(df_sanitasi_detail))
                 ax = sns.barplot(x=df_sanitasi_detail['Jumlah'], y=df_sanitasi_detail['Kategori'], palette=colors_detail, edgecolor="black")
                 for index, (value, percent) in enumerate(zip(df_sanitasi_detail['Jumlah'], df_sanitasi_detail['Persentase'])):
-                    plt.text(value + 1, index, f"{value} rumah ({percent:.1f}%)", va='center', fontsize=11, color='black')
-                plt.xlabel("Jumlah Rumah", fontsize=12)
-                plt.ylabel("Kategori Sanitasi Tidak Layak", fontsize=12)
-                plt.title("Kategori Sanitasi Tidak Layak", fontsize=14, fontweight='bold')
-                plt.xticks(fontsize=11)
-                plt.yticks(fontsize=11)
+                    plt.text(value + 1, index, f"{value} rumah ({percent:.1f}%)", va='center', fontsize=14, color='black')
+                plt.xlabel("Jumlah Rumah", fontsize=14)
+                plt.ylabel("Kategori Sanitasi Tidak Layak", fontsize=14)
+                plt.title("Kategori Sanitasi Tidak Layak", fontsize=16, fontweight='bold')
+                plt.xticks(fontsize=14)
+                plt.yticks(fontsize=14)
                 tampilkan_dan_download()
 
             
