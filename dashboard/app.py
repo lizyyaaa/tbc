@@ -731,8 +731,8 @@ elif nav == "📈 Visualisasi":
                 elif "status_gizi" not in df.columns:
                     st.warning("Kolom 'status_gizi' tidak ditemukan di data.")
                 else:
-                    # Grouping data
-                    imunisasi_gizi = df.groupby(["status_gizi", "status_imunisasi"]).sum().reset_index()
+                    # Grouping data dengan size(), bukan sum()
+                    imunisasi_gizi = df.groupby(["status_gizi", "status_imunisasi"]).size().reset_index(name="count")
             
                     # Cek apakah data kosong
                     if imunisasi_gizi.empty:
@@ -748,10 +748,9 @@ elif nav == "📈 Visualisasi":
                             labels={"count": "Jumlah", "status_gizi": "Status Gizi", "status_imunisasi": "Status Imunisasi"},
                             title="Distribusi Status Gizi berdasarkan Status Imunisasi"
                         )
-
-            # Menampilkan grafik langsung tanpa fungsi tambahan
-            st.plotly_chart(fig)
-
+            
+                        # Menampilkan grafik langsung tanpa fungsi tambahan
+                        st.plotly_chart(fig)
 
                         
 
