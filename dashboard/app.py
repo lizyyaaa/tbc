@@ -6,6 +6,8 @@ from datetime import datetime
 from io import BytesIO
 import plotly.express as px
 import plotly.io as pio  
+from PIL import Image
+import io
 
 # 2) Atur tema Seaborn
 sns.set_theme(style="whitegrid")
@@ -46,18 +48,22 @@ nav = st.sidebar.radio(
 )
 
 def download_chart(fig):
-    buffer = BytesIO()
+    buffer = io.BytesIO()
 
-    # Gunakan tema yang memastikan warna tetap muncul
-    fig.update_layout(template="plotly_white") 
-
-    fig.write_image(buffer, format="png", scale=3, engine="kaleido")
-
+    # Simpan sebagai SVG dulu untuk menjaga warna
+    fig.write_image(buffer, format="svg", engine="kaleido")
     buffer.seek(0)
 
+    # Konversi SVG ke PNG dengan PIL
+    image = Image.open(buffer)
+    png_buffer = io.BytesIO()
+    image.save(png_buffer, format="PNG")
+    png_buffer.seek(0)
+
+    # Tombol download
     st.download_button(
         label="⬇️ Download Gambar",
-        data=buffer,
+        data=png_buffer,
         file_name="chart.png",
         mime="image/png",
         key=f"download_chart_{datetime.now().timestamp()}"
