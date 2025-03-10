@@ -46,11 +46,12 @@ nav = st.sidebar.radio(
 )
 
 # Fungsi download chart
+# Fungsi download chart dengan warna yang benar
 def download_chart(fig):
     buffer = BytesIO()
-    
-    # Simpan gambar dengan format PNG dan warna yang benar
-    pio.write_image(fig, buffer, format='png', scale=2)  
+
+    # Simpan gambar dengan format PNG, warna asli, dan kualitas tinggi
+    pio.write_image(fig, buffer, format='png', scale=3, engine='kaleido')
 
     buffer.seek(0)
 
