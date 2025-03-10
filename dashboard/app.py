@@ -481,46 +481,64 @@ elif nav == "📈 Visualisasi":
             
             elif pilihan == "🐑 Memiliki Hewan Ternak":
                 st.subheader("🐑 Memiliki Hewan Ternak vs Jumlah Pasien")
+                
+                # Grup data berdasarkan kepemilikan hewan ternak
                 data_ternak = df.groupby("memiliki_hewan_ternak")["pasien"].count().reset_index()
                 data_ternak.columns = ["memiliki_hewan_ternak", "jumlah_pasien"]
                 data_ternak = data_ternak.sort_values(by="jumlah_pasien", ascending=False)
+            
+                # Hitung persentase
                 total_pasien_ternak = data_ternak["jumlah_pasien"].sum()
                 data_ternak["persentase"] = (data_ternak["jumlah_pasien"] / total_pasien_ternak) * 100
             
-                plt.figure(figsize=(8, 4))
-                sns.barplot(x="jumlah_pasien", y="memiliki_hewan_ternak", data=data_ternak, palette="magma_r")
-                plt.title("Memiliki Hewan Ternak vs Jumlah Pasien", fontsize=14, fontweight="bold")
-                plt.xlabel("Jumlah Pasien", fontsize=12)
-                plt.ylabel("Memiliki Hewan Ternak", fontsize=12)
-                plt.grid(axis="x", linestyle="--", alpha=0.6)
-                for idx, (value, pct) in enumerate(zip(data_ternak["jumlah_pasien"], data_ternak["persentase"])):
-                    plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
-                tampilkan_dan_download()
+                # Buat plot dengan Plotly
+                fig = px.bar(
+                    data_ternak, 
+                    x="jumlah_pasien", 
+                    y="memiliki_hewan_ternak", 
+                    orientation="h",
+                    text=data_ternak["jumlah_pasien"].astype(str) + " (" + data_ternak["persentase"].round(1).astype(str) + "%)",
+                    labels={"jumlah_pasien": "Jumlah Pasien", "memiliki_hewan_ternak": "Memiliki Hewan Ternak"},
+                    title="🐑 Memiliki Hewan Ternak vs Jumlah Pasien",
+                    color="jumlah_pasien", 
+                    color_continuous_scale="magma_r"
+                )
+
+                # Sesuaikan tampilan teks label
+                fig.update_traces(textposition="outside")
+                fig.update_layout(yaxis=dict(categoryorder="total ascending"))
+
+                # Tampilkan di Streamlit dengan fitur zoom, pan, dan download otomatis
+                st.plotly_chart(fig, use_container_width=True)
                 
             elif pilihan == "🏠 Rumah Layak & Tidak Layak (Chart + Detail)":
                 st.subheader("🏠 Rumah Layak & Tidak Layak")
+                
                 # --- Pie Chart Rumah Layak vs Tidak Layak ---
+                # Pastikan variabel persentase_tidak_layak_rumah sudah didefinisikan sebelumnya
                 labels = ["Layak", "Tidak Layak"]
                 sizes = [100 - persentase_tidak_layak_rumah, persentase_tidak_layak_rumah]
-                colors = ['#4CAF50', '#E74C3C']
-                explode = (0, 0.1)
-                plt.figure(figsize=(8, 4))
-                wedges, texts, autotexts = plt.pie(
-                    sizes, labels=labels, autopct='%1.1f%%', colors=colors,
-                    startangle=140, explode=explode, shadow=True,
-                    wedgeprops={'edgecolor': 'black', 'linewidth': 1.2}
+                # Warna khusus untuk masing-masing kategori
+                color_map = {"Layak": "#4CAF50", "Tidak Layak": "#E74C3C"}
+                # Untuk memberikan efek 'explode' pada slice "Tidak Layak"
+                pull = [0, 0.1]
+                
+                fig_pie = px.pie(
+                    names=labels,
+                    values=sizes,
+                    color=labels,
+                    color_discrete_map=color_map,
+                    title="Persentase Rumah Layak dan Tidak Layak"
                 )
-                for autotext in autotexts:
-                    autotext.set_fontsize(12)
-                    autotext.set_weight("bold")
-                plt.title("Persentase Rumah Layak dan Tidak Layak", fontsize=14, fontweight="bold")
-                tampilkan_dan_download()
+                fig_pie.update_traces(textinfo="percent+label", pull=pull)
+                
+                st.plotly_chart(fig_pie, use_container_width=True)
                 
                 # --- Detail: Bar Chart Kategori Rumah Tidak Layak ---
                 st.markdown("#### Detail Kategori Rumah Tidak Layak")
-                # Pastikan total_rumah didefinisikan berdasarkan df yang digunakan
                 total_rumah = len(df)
-                # Hitung jumlah rumah per sub kategori langsung dari kolom terkait
+                
+                # Hitung jumlah rumah per sub kategori dari kolom terkait
                 kategori_rumah_detail = {
                     "Luas ventilasi ≤ 10% dari luas lantai": df['ventilasi'].str.contains('luas ventilasi < 10%', case=False, na=False).sum(),
                     "Pencahayaan kurang terang, kurang jelas untuk membaca normal": df['pencahayaan'].str.contains('kurang terang', case=False, na=False).sum(),
@@ -531,25 +549,29 @@ elif nav == "📈 Visualisasi":
                     "Tidak ada lubang asap dapur": df['lubang_asap_dapur'].str.contains('tidak ada', case=False, na=False).sum(),
                     "Lantai Tanah": df['lantai'].str.contains('tanah', case=False, na=False).sum(),
                 }
+                # Hapus kategori dengan nilai 0
                 kategori_rumah_detail = {k: v for k, v in kategori_rumah_detail.items() if v > 0}
                 df_detail = pd.DataFrame(list(kategori_rumah_detail.items()), columns=['Kategori', 'Jumlah'])
                 df_detail['Persentase'] = (df_detail['Jumlah'] / total_rumah) * 100
                 df_detail = df_detail.sort_values(by='Jumlah', ascending=False)
                 
-                sns.set_style("whitegrid")
-                plt.figure(figsize=(14, 9))
-                colors_detail = sns.color_palette("viridis", len(df_detail))
-                ax = sns.barplot(x=df_detail['Jumlah'], y=df_detail['Kategori'], palette=colors_detail)
-                for index, (value, percent) in enumerate(zip(df_detail['Jumlah'], df_detail['Persentase'])):
-                    plt.text(value + 1, index, f"{value} rumah ({percent:.1f}%)", va='center')
-                plt.xlabel("Jumlah Rumah", fontsize=14)
-                plt.ylabel("Kategori Rumah Tidak Layak", fontsize=14)
-                plt.title("Kategori Rumah Tidak Layak", fontsize=16, fontweight='bold')
-                plt.xlim(0, df_detail['Jumlah'].max() + 5)
-                tampilkan_dan_download()
+                # Buat bar chart dengan Plotly
+                fig_bar = px.bar(
+                    df_detail,
+                    x="Jumlah",
+                    y="Kategori",
+                    orientation="h",
+                    text=df_detail.apply(lambda row: f"{row['Jumlah']} rumah ({row['Persentase']:.1f}%)", axis=1),
+                    title="Kategori Rumah Tidak Layak",
+                    labels={"Jumlah": "Jumlah Rumah", "Kategori": "Kategori Rumah Tidak Layak"},
+                    color="Jumlah",
+                    color_continuous_scale="Viridis"
+                )
+                fig_bar.update_traces(textposition="outside")
+                fig_bar.update_layout(xaxis_range=[0, df_detail["Jumlah"].max() + 5])
+                
+                st.plotly_chart(fig_bar, use_container_width=True)
 
-
-            
             elif pilihan == "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)":
                 st.subheader("🚰 Sanitasi Layak & Tidak Layak")
                 # --- Pie Chart Sanitasi Layak vs Tidak Layak ---
