@@ -722,7 +722,7 @@ elif nav == "📈 Visualisasi":
                         plt.xticks(rotation=45)
                         tampilkan_dan_download()  # Menampilkan chart dan opsi download
                         
-           if pilihan == "🟢 Status Gizi dan Imunisasi":
+                elif  pilihan == "🟢 Status Gizi dan Imunisasi":
                 st.subheader("🟢 Distribusi Status Gizi dan Imunisasi (Gabungan)")
             
                 # Pastikan kolom tersedia
