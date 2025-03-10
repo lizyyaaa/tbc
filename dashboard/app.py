@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 from io import BytesIO
-
+import plotly.express as px
 
 # 2) Atur tema Seaborn
 sns.set_theme(style="whitegrid")
@@ -711,24 +711,28 @@ elif nav == "📈 Visualisasi":
                         
             elif pilihan == "🟢 Status Gizi dan Imunisasi":
                 st.subheader("🟢 Distribusi Status Gizi dan Imunisasi (Gabungan)")
-                # Pastikan kolom "status_imunisasi" dan "status_gizi" ada  
+            
+                # Pastikan kolom tersedia  
                 if "status_imunisasi" not in df.columns:  
                     st.warning("Kolom 'status_imunisasi' tidak ditemukan di data.")  
                 elif "status_gizi" not in df.columns:  
                     st.warning("Kolom 'status_gizi' tidak ditemukan di data.")  
                 else:  
-                    # Grouping berdasarkan status imunisasi dan status gizi  
-                    imunisasi_gizi = df.groupby(["status_gizi", "status_imunisasi"]).size().reset_index(name="count")  
+                    # Grouping data  
+                    imunisasi_gizi = df.groupby(["status_gizi", "status_imunisasi"]).size().reset_index(name="count")
             
-                    # Plot menggunakan Seaborn  
-                    fig, ax = plt.subplots(figsize=(10, 5))  
-                    sns.barplot(x="status_gizi", y="count", hue="status_imunisasi", data=imunisasi_gizi, palette="pastel", ax=ax)  
-                    ax.set_xlabel("Status Gizi")  
-                    ax.set_ylabel("Jumlah")  
-                    ax.set_title("Distribusi Status Gizi berdasarkan Status Imunisasi")  
-                    plt.xticks(rotation=45)  
+                    # Membuat grafik dengan Plotly  
+                    fig = px.bar(imunisasi_gizi, 
+                                 x="status_gizi", 
+                                 y="count", 
+                                 color="status_imunisasi",
+                                 barmode="group",
+                                 labels={"count": "Jumlah", "status_gizi": "Status Gizi", "status_imunisasi": "Status Imunisasi"},
+                                 title="Distribusi Status Gizi berdasarkan Status Imunisasi")
             
-                    tampilkan_dan_download()
+                    # Gunakan fungsi tampilkan_dan_download()
+                    tampilkan_dan_download(fig, "status_gizi_imunisasi.png")
+
 
                         
 
