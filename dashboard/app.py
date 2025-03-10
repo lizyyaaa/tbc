@@ -58,14 +58,11 @@ def download_chart(fig):
         key=f"download_chart_{datetime.now().timestamp()}"  # Key unik
     )
 
-# Fungsi untuk menampilkan chart dan download
+# Fungsi untuk menampilkan chart dan tombol download tanpa merubah grafik awal
 def tampilkan_dan_download():
-    fig, ax = plt.subplots()  # Buat figure baru
-    ax.plot([1, 2, 3], [4, 5, 6])  # Contoh plot
-
+    fig = plt.gcf()  # Ambil figure yang sudah ada
     st.pyplot(fig)  # Tampilkan figure di Streamlit
     download_chart(fig)  # Download figure yang sama
-    plt.close(fig)  # Tutup figure agar tidak menghabiskan memori
 
 
 # ================================
