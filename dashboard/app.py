@@ -731,7 +731,7 @@ elif nav == "📈 Visualisasi":
                             title="Distribusi Usia per Gender"
                         )
 
-            st.plotly_chart(fig)
+                        st.plotly_chart(fig)
                         
             elif pilihan == "🟢 Status Gizi dan Imunisasi":
                 st.subheader("🟢 Distribusi Status Gizi dan Imunisasi (Gabungan)")
