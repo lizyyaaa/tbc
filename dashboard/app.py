@@ -59,11 +59,9 @@ def download_chart(fig):
     )
 
 # Fungsi untuk menampilkan chart dan tombol download tanpa merubah grafik awal
-def tampilkan_dan_download():
-    fig = plt.gcf()  # Ambil figure yang sudah ada
-    st.pyplot(fig)  # Tampilkan figure di Streamlit
-    download_chart(fig)  # Download figure yang sama
-
+def tampilkan_dan_download(fig):
+    st.plotly_chart(fig)  # Gunakan plotly_chart untuk menampilkan grafik Plotly
+    download_chart(fig)   # Download gambar
 
 # ================================
 # Halaman Home: Input & Upload Data
