@@ -449,26 +449,25 @@ elif nav == "📈 Visualisasi":
             
             elif pilihan == "📈 Kebiasaan CTPS":
                 st.subheader("📈 Kebiasaan CTPS vs Jumlah Pasien")
-                
                 data_ctps = df.groupby("kebiasaan_ctps")["pasien"].count().reset_index()
                 data_ctps.columns = ["kebiasaan_ctps", "jumlah_pasien"]
                 data_ctps = data_ctps.sort_values(by="jumlah_pasien", ascending=False)
-            
+                
                 total_pasien_ctps = data_ctps["jumlah_pasien"].sum()
                 data_ctps["persentase"] = (data_ctps["jumlah_pasien"] / total_pasien_ctps) * 100
             
-                # Buat plot dengan Plotly
-                fig = px.bar(
-                    data_ctps,
-                    x="jumlah_pasien",
-                    y="kebiasaan_ctps",
-                    text=data_ctps.apply(lambda row: f"{row['jumlah_pasien']} ({row['persentase']:.1f}%)", axis=1),
-                    labels={"jumlah_pasien": "Jumlah Pasien", "kebiasaan_ctps": "Kebiasaan CTPS"},
-                    title="Kebiasaan CTPS vs Jumlah Pasien",
-                    orientation="h",
-                    color="jumlah_pasien",
-                    color_continuous_scale="Blues"
-                )
+                fig, ax = plt.subplots(figsize=(8, 4))
+                sns.barplot(x="jumlah_pasien", y="kebiasaan_ctps", data=data_ctps, palette="Blues_r", ax=ax)
+                ax.set_title("Kebiasaan CTPS vs Jumlah Pasien", fontsize=14, fontweight="bold")
+                ax.set_xlabel("Jumlah Pasien", fontsize=12)
+                ax.set_ylabel("Kebiasaan CTPS", fontsize=12)
+                ax.grid(axis="x", linestyle="--", alpha=0.6)
+            
+                for idx, (value, pct) in enumerate(zip(data_ctps["jumlah_pasien"], data_ctps["persentase"])):
+                    ax.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
+                
+                st.pyplot(fig)
+                tampilkan_dan_download()
             
             elif pilihan == "🐑 Memiliki Hewan Ternak":
                 st.subheader("🐑 Memiliki Hewan Ternak vs Jumlah Pasien")
