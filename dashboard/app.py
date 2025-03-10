@@ -46,12 +46,12 @@ nav = st.sidebar.radio(
 )
 
 # Fungsi download chart
-# Fungsi download chart dengan warna yang benar
 def download_chart(fig):
     buffer = BytesIO()
 
-    # Simpan gambar dengan format PNG, warna asli, dan kualitas tinggi
-    pio.write_image(fig, buffer, format='png', scale=3, engine='kaleido')
+    # Gunakan format vektorisasi (vectorized) agar warna tidak hilang
+    fig.update_layout(template="plotly")  # Paksa menggunakan tema berwarna
+    fig.write_image(buffer, format="png", scale=3, engine="kaleido")
 
     buffer.seek(0)
 
