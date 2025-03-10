@@ -51,7 +51,7 @@ def download_chart(fig):
     
     # Simpan Plotly figure ke PNG
     try:
-        pio.write_image(fig, buffer, format="png")
+        pio.write_image(fig, buffer, format="png", engine="kaleido")  # Gunakan engine kaleido
         buffer.seek(0)
 
         st.download_button(
@@ -68,6 +68,7 @@ def download_chart(fig):
 def tampilkan_dan_download(fig):
     st.plotly_chart(fig)  # Tampilkan grafik Plotly
     download_chart(fig)   # Tambahkan tombol download
+    
 # ================================
 # Halaman Home: Input & Upload Data
 # ================================
