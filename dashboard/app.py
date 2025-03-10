@@ -62,22 +62,19 @@ if nav == "🏠 Home":
     st.title("🏠 Home - Input & Upload Data")
     st.markdown("### Upload file CSV dan masukkan data baru secara manual. Data yang diinput akan digabungkan dan ditampilkan.")
     
-    # Widget Upload CSV
+     # --- Bagian Upload CSV ---
     uploaded_file = st.file_uploader("📂 Upload file CSV", type=["csv"])
     if uploaded_file is not None:
         try:
+            # Membaca CSV dengan separator ';'
             df_csv = pd.read_csv(uploaded_file, sep=';', encoding='utf-8')
             st.success("File CSV berhasil diupload!")
+            # Update session_state csv_data dan gabungkan dengan manual_data
+            st.session_state["csv_data"] = df_csv.copy()
+            st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
+            st.info("Data CSV telah disimpan dan digabungkan dengan data manual yang ada.")
         except Exception as e:
             st.error(f"Error membaca file: {e}")
-            df_csv = pd.DataFrame()
-    else:
-        df_csv = pd.DataFrame()
-
-    # Jika file CSV diupload dan session_state kosong, simpan data CSV ke session_state
-    if not df_csv.empty and st.session_state["data"].empty:
-        st.session_state["data"] = df_csv.copy()
-        st.info("Data CSV telah disimpan ke data gabungan.")
    
 
     # Urutan field yang diinginkan
@@ -232,15 +229,14 @@ if nav == "🏠 Home":
         st.success("Data manual tambahan berhasil ditambahkan!")
         st.dataframe(df_manual)
         
-        # Misal data CSV sudah ada dalam df_csv
-        if 'df_csv' in st.session_state and not st.session_state.get("data", pd.DataFrame()).empty:
-            df_combined = pd.concat([st.session_state["data"], df_manual], ignore_index=True)
-        else:
-            df_combined = df_manual.copy()
-        
-        st.session_state["data"] = df_combined
+        # Update session_state manual_data dengan menambahkan data baru
+        st.session_state["manual_data"] = pd.concat([st.session_state["manual_data"], df_manual], ignore_index=True)
+        # Gabungkan data CSV dan data manual menjadi data gabungan
+        st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
         st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
-    elif "data" in st.session_state and not st.session_state["data"].empty:
+    
+    # Tampilkan data gabungan jika sudah ada
+    if not st.session_state["data"].empty:
         st.markdown("### Data Gabungan Saat Ini")
         st.dataframe(st.session_state["data"])
 
