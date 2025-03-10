@@ -45,12 +45,12 @@ nav = st.sidebar.radio(
     ["🏠 Home", "📈 Visualisasi"]
 )
 
-# Fungsi download chart
 def download_chart(fig):
     buffer = BytesIO()
 
-    # Gunakan format vektorisasi (vectorized) agar warna tidak hilang
-    fig.update_layout(template="plotly")  # Paksa menggunakan tema berwarna
+    # Gunakan tema yang memastikan warna tetap muncul
+    fig.update_layout(template="plotly_white") 
+
     fig.write_image(buffer, format="png", scale=3, engine="kaleido")
 
     buffer.seek(0)
