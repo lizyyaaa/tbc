@@ -48,17 +48,20 @@ nav = st.sidebar.radio(
 )
 
 def download_chart(fig):
-    buffer = io.BytesIO()
+    # Simpan gambar sebagai PNG langsung dari Plotly
+    buffer = fig.to_image(format="png", engine="kaleido")
 
-    # Simpan sebagai SVG dulu untuk menjaga warna
-    fig.write_image(buffer, format="svg", engine="kaleido")
-    buffer.seek(0)
+    # Buat stream buffer dari bytes
+    image_stream = io.BytesIO(buffer)
 
-    # Konversi SVG ke PNG dengan PIL
-    image = Image.open(buffer)
-    png_buffer = io.BytesIO()
-    image.save(png_buffer, format="PNG")
-    png_buffer.seek(0)
+    # Tombol download
+    st.download_button(
+        label="⬇️ Download Gambar",
+        data=image_stream,
+        file_name="chart.png",
+        mime="image/png",
+        key=f"download_chart_{datetime.now().timestamp()}"
+    )
 
     # Tombol download
     st.download_button(
