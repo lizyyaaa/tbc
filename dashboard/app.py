@@ -447,7 +447,7 @@ elif nav == "📈 Visualisasi":
             
                 st.plotly_chart(fig)
             
-            elif pilihan == "📈 Kebiasaan CTPS":
+            elif elif pilihan == "📈 Kebiasaan CTPS":
                 st.subheader("📈 Kebiasaan CTPS vs Jumlah Pasien")
                 
                 # Grup data berdasarkan kebiasaan CTPS
@@ -459,20 +459,25 @@ elif nav == "📈 Visualisasi":
                 total_pasien_ctps = data_ctps["jumlah_pasien"].sum()
                 data_ctps["persentase"] = (data_ctps["jumlah_pasien"] / total_pasien_ctps) * 100
             
-                # Buat plot dengan Matplotlib & Seaborn
-                fig, ax = plt.subplots(figsize=(8, 4))
-                sns.barplot(x="jumlah_pasien", y="kebiasaan_ctps", data=data_ctps, palette="Blues_r", ax=ax)
-                ax.set_title("Kebiasaan CTPS vs Jumlah Pasien", fontsize=14, fontweight="bold")
-                ax.set_xlabel("Jumlah Pasien", fontsize=12)
-                ax.set_ylabel("Kebiasaan CTPS", fontsize=12)
-                ax.grid(axis="x", linestyle="--", alpha=0.6)
-            
-                # Tambahkan label pada batang
-                for idx, (value, pct) in enumerate(zip(data_ctps["jumlah_pasien"], data_ctps["persentase"])):
-                    ax.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
-                
-                # Tampilkan chart
-                st.pyplot(fig)
+                # Buat plot dengan Plotly
+                fig = px.bar(
+                    data_ctps, 
+                    x="jumlah_pasien", 
+                    y="kebiasaan_ctps", 
+                    orientation="h",
+                    text=data_ctps["jumlah_pasien"].astype(str) + " (" + data_ctps["persentase"].round(1).astype(str) + "%)",
+                    labels={"jumlah_pasien": "Jumlah Pasien", "kebiasaan_ctps": "Kebiasaan CTPS"},
+                    title="📈 Kebiasaan CTPS vs Jumlah Pasien",
+                    color="jumlah_pasien", 
+                    color_continuous_scale="Blues"
+                )
+
+    # Sesuaikan tampilan teks label
+    fig.update_traces(textposition="outside")
+    fig.update_layout(yaxis=dict(categoryorder="total ascending"))
+
+    # Tampilkan di Streamlit dengan fitur zoom, pan, download otomatis
+    st.plotly_chart(fig, use_container_width=True)
             
             elif pilihan == "🐑 Memiliki Hewan Ternak":
                 st.subheader("🐑 Memiliki Hewan Ternak vs Jumlah Pasien")
