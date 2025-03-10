@@ -5,6 +5,7 @@ import seaborn as sns
 from datetime import datetime
 from io import BytesIO
 import plotly.express as px
+import plotly.io as pio  
 
 # 2) Atur tema Seaborn
 sns.set_theme(style="whitegrid")
