@@ -648,28 +648,30 @@ elif nav == "📈 Visualisasi":
             
             elif pilihan == "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)":
                 st.subheader("🚩 Perilaku Baik & Tidak Sehat")
+                
                 # --- Pie Chart Perilaku Baik vs Tidak Baik ---
-                persentase_baik_perilaku = 100 - persentase_tidak_baik_perilaku
+                # Pastikan variabel persentase_tidak_baik_perilaku sudah didefinisikan
+                persentase_baik_perilaku = 100 - persentase_tidak_baik_perilaku  
                 labels_perilaku = ["Baik", "Tidak Baik"]
                 sizes_perilaku = [persentase_baik_perilaku, persentase_tidak_baik_perilaku]
-                colors_perilaku = ['#1F77B4', '#FF7F0E']
-                explode_perilaku = (0, 0.1)
-                plt.figure(figsize=(8, 4))
-                wedges, texts, autotexts = plt.pie(
-                    sizes_perilaku, labels=labels_perilaku, autopct='%1.1f%%', colors=colors_perilaku,
-                    startangle=140, explode=explode_perilaku, shadow=True,
-                    wedgeprops={'edgecolor': 'black', 'linewidth': 1.2}
+                colors_perilaku = {'Baik': '#1F77B4', 'Tidak Baik': '#FF7F0E'}
+                pull_perilaku = [0, 0.1]  # slice "Tidak Baik" di-'explode'
+                
+                fig_pie = px.pie(
+                    names=labels_perilaku,
+                    values=sizes_perilaku,
+                    color=labels_perilaku,
+                    color_discrete_map=colors_perilaku,
+                    title="Persentase Perilaku Baik dan Tidak Baik"
                 )
-                for autotext in autotexts:
-                    autotext.set_fontsize(12)
-                    autotext.set_weight("bold")
-                plt.title("Persentase Perilaku Baik dan Tidak Baik", fontsize=14, fontweight="bold")
-                tampilkan_dan_download()
+                fig_pie.update_traces(textinfo="percent+label", pull=pull_perilaku)
+                st.plotly_chart(fig_pie, use_container_width=True)
                 
                 # --- Detail: Bar Chart Kategori Perilaku Tidak Sehat ---
                 st.markdown("#### Detail Kategori Perilaku Tidak Sehat")
                 total_rumah = len(df)
-                # Hitung jumlah rumah yang memiliki setiap kategori perilaku tidak sehat
+                
+                # Hitung jumlah rumah untuk setiap kategori perilaku tidak sehat
                 kategori_perilaku_detail = {
                     "BAB di sungai / kebun / kolam / sembarangan": df['membuang_tinja'].apply(lambda x: any(word in str(x).lower() for word in ['sungai', 'kebun', 'kolam', 'sembarangan'])).sum(),
                     "Tidak CTPS": df['kebiasaan_ctps'].apply(lambda x: 'tidak' in str(x).lower()).sum(),
@@ -684,21 +686,34 @@ elif nav == "📈 Visualisasi":
                 df_perilaku_detail['Persentase'] = (df_perilaku_detail['Jumlah'] / total_rumah) * 100
                 df_perilaku_detail = df_perilaku_detail.sort_values(by='Jumlah', ascending=False)
                 
-                sns.set_style("whitegrid")
-                plt.figure(figsize=(12, 7))
-                colors_detail = sns.color_palette("Blues", len(df_perilaku_detail))
-                ax = sns.barplot(x=df_perilaku_detail['Jumlah'], y=df_perilaku_detail['Kategori'], palette=colors_detail, edgecolor="black")
-                for index, (value, percent) in enumerate(zip(df_perilaku_detail['Jumlah'], df_perilaku_detail['Persentase'])):
-                    plt.text(value + 1, index, f"{value} ({percent:.1f}%)", va='center', fontsize=11, color='black')
-                plt.xlabel("Jumlah Rumah", fontsize=12)
-                plt.ylabel("Kategori Perilaku Tidak Sehat", fontsize=12)
-                plt.title("Kategori Perilaku Tidak Sehat", fontsize=14, fontweight='bold')
-                plt.xticks(fontsize=11)
-                plt.yticks(fontsize=11)
-                tampilkan_dan_download()
+                # Buat kolom label untuk teks pada batang
+                df_perilaku_detail['Label'] = df_perilaku_detail.apply(
+                    lambda row: f"{row['Jumlah']} ({row['Persentase']:.1f}%)", axis=1
+                )
+                
+                fig_bar = px.bar(
+                    df_perilaku_detail,
+                    x="Jumlah",
+                    y="Kategori",
+                    orientation="h",
+                    text="Label",
+                    title="Kategori Perilaku Tidak Sehat",
+                    labels={"Jumlah": "Jumlah Rumah", "Kategori": "Kategori Perilaku Tidak Sehat"},
+                    color="Jumlah",
+                    color_continuous_scale="Blues"
+                )
+                fig_bar.update_traces(textposition="outside", textfont=dict(size=11))
+                fig_bar.update_layout(
+                    xaxis_title="Jumlah Rumah",
+                    yaxis_title="Kategori Perilaku Tidak Sehat",
+                    margin=dict(l=150, r=50, t=50, b=50)
+                )
+                
+                st.plotly_chart(fig_bar, use_container_width=True)
 
             elif pilihan == "🩺 Jumlah Pasien per Puskesmas":
                 st.subheader("🩺 Jumlah Pasien per Puskesmas")
+                
                 # Hitung jumlah pasien berdasarkan puskesmas
                 puskesmas_counts = df.groupby("puskesmas")["pasien"].count().reset_index()
                 puskesmas_counts.columns = ["puskesmas", "jumlah_pasien"]
@@ -709,16 +724,26 @@ elif nav == "📈 Visualisasi":
             
                 # Urutkan dari terbanyak
                 puskesmas_counts = puskesmas_counts.sort_values(by="jumlah_pasien", ascending=False)
-            
-                plt.figure(figsize=(12, 6))
-                sns.barplot(x="jumlah_pasien", y="puskesmas", data=puskesmas_counts, palette="magma")
-                plt.title("Jumlah Pasien per Puskesmas", fontsize=14, fontweight="bold")
-                plt.xlabel("Jumlah Pasien", fontsize=12)
-                plt.ylabel("Puskesmas", fontsize=12)
-                plt.grid(axis="x", linestyle="--", alpha=0.6)
-                for index, (value, percent) in enumerate(zip(puskesmas_counts["jumlah_pasien"], puskesmas_counts["persentase"])):
-                    plt.text(value + 1, index, f"{value} ({percent:.1f}%)", va='center', fontsize=10, color="black")
-                tampilkan_dan_download()
+                
+                # Buat plot horizontal dengan Plotly Express
+                fig = px.bar(
+                    puskesmas_counts,
+                    x="jumlah_pasien",
+                    y="puskesmas",
+                    orientation="h",
+                    text=puskesmas_counts.apply(
+                        lambda row: f"{row['jumlah_pasien']} ({row['persentase']:.1f}%)", axis=1
+                    ),
+                    labels={"jumlah_pasien": "Jumlah Pasien", "puskesmas": "Puskesmas"},
+                    title="Jumlah Pasien per Puskesmas",
+                    color="jumlah_pasien",
+                    color_continuous_scale="magma"
+                )
+                fig.update_traces(textposition="outside")
+                fig.update_layout(yaxis=dict(categoryorder="total ascending"))
+                
+                # Tampilkan grafik Plotly (toolbar interaktif sudah otomatis termasuk opsi download)
+                st.plotly_chart(fig, use_container_width=True)
             
             elif pilihan == "📅 Tren Date Start Pasien":
                 st.subheader("📅 Tren Date Start Pasien")
