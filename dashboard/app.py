@@ -55,14 +55,18 @@ def download_chart(fig):
         data=buffer,
         file_name="chart.png",
         mime="image/png",
-        key="download_chart_" + str(datetime.now().timestamp())  # Key unik
+        key=f"download_chart_{datetime.now().timestamp()}"  # Key unik
     )
 
 # Fungsi untuk menampilkan chart dan download
 def tampilkan_dan_download():
-    st.pyplot(plt.gcf())
-    download_chart()
-    plt.clf()
+    fig, ax = plt.subplots()  # Buat figure baru
+    ax.plot([1, 2, 3], [4, 5, 6])  # Contoh plot
+
+    st.pyplot(fig)  # Tampilkan figure di Streamlit
+    download_chart(fig)  # Download figure yang sama
+    plt.close(fig)  # Tutup figure agar tidak menghabiskan memori
+
 
 # ================================
 # Halaman Home: Input & Upload Data
