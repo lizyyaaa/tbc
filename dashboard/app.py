@@ -47,22 +47,26 @@ nav = st.sidebar.radio(
 # Fungsi download chart
 def download_chart(fig):
     buffer = BytesIO()
-    fig.savefig(buffer, format='png', bbox_inches='tight')  # Simpan figure ke buffer
-    buffer.seek(0)
+    
+    # Simpan Plotly figure ke PNG
+    try:
+        pio.write_image(fig, buffer, format="png")
+        buffer.seek(0)
 
-    st.download_button(
-        label="⬇️ Download Gambar",
-        data=buffer,
-        file_name="chart.png",
-        mime="image/png",
-        key=f"download_chart_{datetime.now().timestamp()}"  # Key unik
-    )
+        st.download_button(
+            label="⬇️ Download Gambar",
+            data=buffer,
+            file_name="chart.png",
+            mime="image/png",
+            key=f"download_chart_{datetime.now().timestamp()}"  # Key unik
+        )
+    except Exception as e:
+        st.error(f"Error saat menyimpan gambar: {e}")
 
-# Fungsi untuk menampilkan chart dan tombol download tanpa merubah grafik awal
+# Fungsi untuk menampilkan chart dan download
 def tampilkan_dan_download(fig):
-    st.plotly_chart(fig)  # Gunakan plotly_chart untuk menampilkan grafik Plotly
-    download_chart(fig)   # Download gambar
-
+    st.plotly_chart(fig)  # Tampilkan grafik Plotly
+    download_chart(fig)   # Tambahkan tombol download
 # ================================
 # Halaman Home: Input & Upload Data
 # ================================
