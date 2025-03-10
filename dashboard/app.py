@@ -49,20 +49,18 @@ nav = st.sidebar.radio(
 def download_chart(fig):
     buffer = BytesIO()
     
-    # Simpan Plotly figure ke PNG
-    try:
-        pio.write_image(fig, buffer, format="png", engine="kaleido")  # Gunakan engine kaleido
-        buffer.seek(0)
+    # Simpan gambar dengan format PNG dan warna yang benar
+    pio.write_image(fig, buffer, format='png', scale=2)  
 
-        st.download_button(
-            label="⬇️ Download Gambar",
-            data=buffer,
-            file_name="chart.png",
-            mime="image/png",
-            key=f"download_chart_{datetime.now().timestamp()}"  # Key unik
-        )
-    except Exception as e:
-        st.error(f"Error saat menyimpan gambar: {e}")
+    buffer.seek(0)
+
+    st.download_button(
+        label="⬇️ Download Gambar",
+        data=buffer,
+        file_name="chart.png",
+        mime="image/png",
+        key=f"download_chart_{datetime.now().timestamp()}"
+    )
 
 # Fungsi untuk menampilkan chart dan download
 def tampilkan_dan_download(fig):
