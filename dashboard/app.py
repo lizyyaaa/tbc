@@ -447,7 +447,7 @@ elif nav == "📈 Visualisasi":
             
                 st.plotly_chart(fig)
             
-            elif elif pilihan == "📈 Kebiasaan CTPS":
+            elif pilihan == "📈 Kebiasaan CTPS":
                 st.subheader("📈 Kebiasaan CTPS vs Jumlah Pasien")
                 data_ctps = df.groupby("kebiasaan_ctps")["pasien"].count().reset_index()
                 data_ctps.columns = ["kebiasaan_ctps", "jumlah_pasien"]
