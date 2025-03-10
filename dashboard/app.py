@@ -449,13 +449,17 @@ elif nav == "📈 Visualisasi":
             
             elif pilihan == "📈 Kebiasaan CTPS":
                 st.subheader("📈 Kebiasaan CTPS vs Jumlah Pasien")
+                
+                # Grup data berdasarkan kebiasaan CTPS
                 data_ctps = df.groupby("kebiasaan_ctps")["pasien"].count().reset_index()
                 data_ctps.columns = ["kebiasaan_ctps", "jumlah_pasien"]
                 data_ctps = data_ctps.sort_values(by="jumlah_pasien", ascending=False)
                 
+                # Hitung persentase
                 total_pasien_ctps = data_ctps["jumlah_pasien"].sum()
                 data_ctps["persentase"] = (data_ctps["jumlah_pasien"] / total_pasien_ctps) * 100
             
+                # Buat plot dengan Matplotlib & Seaborn
                 fig, ax = plt.subplots(figsize=(8, 4))
                 sns.barplot(x="jumlah_pasien", y="kebiasaan_ctps", data=data_ctps, palette="Blues_r", ax=ax)
                 ax.set_title("Kebiasaan CTPS vs Jumlah Pasien", fontsize=14, fontweight="bold")
@@ -463,11 +467,12 @@ elif nav == "📈 Visualisasi":
                 ax.set_ylabel("Kebiasaan CTPS", fontsize=12)
                 ax.grid(axis="x", linestyle="--", alpha=0.6)
             
+                # Tambahkan label pada batang
                 for idx, (value, pct) in enumerate(zip(data_ctps["jumlah_pasien"], data_ctps["persentase"])):
                     ax.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
                 
+                # Tampilkan chart
                 st.pyplot(fig)
-                tampilkan_dan_download()
             
             elif pilihan == "🐑 Memiliki Hewan Ternak":
                 st.subheader("🐑 Memiliki Hewan Ternak vs Jumlah Pasien")
