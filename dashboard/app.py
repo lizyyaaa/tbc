@@ -447,7 +447,7 @@ elif nav == "📈 Visualisasi":
             
                 st.plotly_chart(fig)
             
-            elif elif pilihan == "📈 Kebiasaan CTPS":
+            elif pilihan == "📈 Kebiasaan CTPS":
                 st.subheader("📈 Kebiasaan CTPS vs Jumlah Pasien")
                 
                 # Grup data berdasarkan kebiasaan CTPS
@@ -472,12 +472,12 @@ elif nav == "📈 Visualisasi":
                     color_continuous_scale="Blues"
                 )
 
-    # Sesuaikan tampilan teks label
-    fig.update_traces(textposition="outside")
-    fig.update_layout(yaxis=dict(categoryorder="total ascending"))
-
-    # Tampilkan di Streamlit dengan fitur zoom, pan, download otomatis
-    st.plotly_chart(fig, use_container_width=True)
+                # Sesuaikan tampilan teks label
+                fig.update_traces(textposition="outside")
+                fig.update_layout(yaxis=dict(categoryorder="total ascending"))
+            
+                # Tampilkan di Streamlit dengan fitur zoom, pan, download otomatis
+                st.plotly_chart(fig, use_container_width=True)
             
             elif pilihan == "🐑 Memiliki Hewan Ternak":
                 st.subheader("🐑 Memiliki Hewan Ternak vs Jumlah Pasien")
