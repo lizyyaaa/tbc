@@ -45,18 +45,18 @@ nav = st.sidebar.radio(
 )
 
 # Fungsi download chart
-def download_chart():
+def download_chart(fig):
     buffer = BytesIO()
-    plt.savefig(buffer, format='png', bbox_inches='tight')
+    fig.savefig(buffer, format='png', bbox_inches='tight')  # Simpan figure ke buffer
     buffer.seek(0)
+
     st.download_button(
         label="⬇️ Download Gambar",
         data=buffer,
         file_name="chart.png",
         mime="image/png",
-        key="download_chart_" + str(datetime.now().timestamp())  # key unik
+        key="download_chart_" + str(datetime.now().timestamp())  # Key unik
     )
-    buffer.close()
 
 # Fungsi untuk menampilkan chart dan download
 def tampilkan_dan_download():
