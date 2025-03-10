@@ -389,8 +389,8 @@ elif nav == "📈 Visualisasi":
             # Mendefinisikan opsi visualisasi baru
             visualisasi_list = [
                 "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak",
-                "📈 Kebiasaan CTPS vs Jumlah Pasien",
-                "🐑 Memiliki Hewan Ternak vs Jumlah Pasien",
+                "📈 Kebiasaan CTPS",
+                "🐑 Memiliki Hewan Ternak",
                 "🏠 Rumah Layak & Tidak Layak (Chart + Detail)",
                 "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)",
                 "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)",
@@ -421,7 +421,7 @@ elif nav == "📈 Visualisasi":
                     plt.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
                 tampilkan_dan_download()
             
-            elif pilihan == "📈 Kebiasaan CTPS vs Jumlah Pasien":
+            elif pilihan == "📈 Kebiasaan CTPS":
                 st.subheader("📈 Kebiasaan CTPS vs Jumlah Pasien")
                 data_ctps = df.groupby("kebiasaan_ctps")["pasien"].count().reset_index()
                 data_ctps.columns = ["kebiasaan_ctps", "jumlah_pasien"]
@@ -439,7 +439,7 @@ elif nav == "📈 Visualisasi":
                     plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
                 tampilkan_dan_download()
             
-            elif pilihan == "🐑 Memiliki Hewan Ternak vs Jumlah Pasien":
+            elif pilihan == "🐑 Memiliki Hewan Ternak":
                 st.subheader("🐑 Memiliki Hewan Ternak vs Jumlah Pasien")
                 data_ternak = df.groupby("memiliki_hewan_ternak")["pasien"].count().reset_index()
                 data_ternak.columns = ["memiliki_hewan_ternak", "jumlah_pasien"]
@@ -723,8 +723,6 @@ elif nav == "📈 Visualisasi":
                     tampilkan_dan_download()
 
                         
-           
-
 
             
             st.sidebar.success("Visualisasi selesai ditampilkan!")
