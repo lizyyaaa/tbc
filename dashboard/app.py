@@ -226,9 +226,10 @@ if nav == "🏠 Home":
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
     
     if submitted_manual:
-        # Ubah nilai date_input menjadi pd.Timestamp
-        input_manual["date_start"] = pd.to_datetime(input_manual["date_start"])
-        input_manual["tgl_kunjungan"] = pd.to_datetime(input_manual["tgl_kunjungan"])
+        # Ubah nilai date_input menjadi pd.Timestamp, lalu format menjadi string "YYYY-MM-DD"
+        input_manual["date_start"] = pd.to_datetime(input_manual["date_start"]).dt.strftime('%Y-%m-%d')
+        input_manual["tgl_kunjungan"] = pd.to_datetime(input_manual["tgl_kunjungan"]).dt.strftime('%Y-%m-%d')
+        
         df_manual = pd.DataFrame([input_manual])
         st.success("Data manual tambahan berhasil ditambahkan!")
         st.dataframe(df_manual)
