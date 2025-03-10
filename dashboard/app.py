@@ -578,30 +578,29 @@ elif nav == "📈 Visualisasi":
 
             elif pilihan == "🚰 Sanitasi Layak & Tidak Layak (Chart + Detail)":
                 st.subheader("🚰 Sanitasi Layak & Tidak Layak")
+                
                 # --- Pie Chart Sanitasi Layak vs Tidak Layak ---
-                persentase_layak_sanitasi = 100 - persentase_tidak_layak_sanitasi
+                persentase_layak_sanitasi = 100 - persentase_tidak_layak_sanitasi  # pastikan variabel ini sudah didefinisikan
                 labels_sanitasi = ["Layak", "Tidak Layak"]
                 sizes_sanitasi = [persentase_layak_sanitasi, persentase_tidak_layak_sanitasi]
-                colors_sanitasi = ['#3498DB', '#E74C3C']
-                explode_sanitasi = (0, 0.1)
-                plt.figure(figsize=(8, 4))
-                wedges, texts, autotexts = plt.pie(
-                    sizes_sanitasi, labels=labels_sanitasi, autopct='%1.1f%%', colors=colors_sanitasi,
-                    startangle=140, explode=explode_sanitasi, shadow=True,
-                    wedgeprops={'edgecolor': 'black', 'linewidth': 1.2}
+                
+                # Buat pie chart dengan Plotly Express
+                fig_pie = px.pie(
+                    names=labels_sanitasi,
+                    values=sizes_sanitasi,
+                    color=labels_sanitasi,
+                    color_discrete_map={"Layak": "#3498DB", "Tidak Layak": "#E74C3C"},
+                    title="Persentase Sanitasi Layak dan Tidak Layak"
                 )
-                for autotext in autotexts:
-                    autotext.set_fontsize(12)
-                    autotext.set_weight("bold")
-                plt.title("Persentase Sanitasi Layak dan Tidak Layak", fontsize=14, fontweight="bold")
-                tampilkan_dan_download()
+                # Mengatur agar slice "Tidak Layak" terlihat 'meledak'
+                fig_pie.update_traces(textinfo="percent+label", pull=[0, 0.1])
+                st.plotly_chart(fig_pie, use_container_width=True)
                 
                 # --- Detail: Bar Chart Detail Kategori Sanitasi Tidak Layak ---
                 st.markdown("#### Detail Kategori Sanitasi Tidak Layak")
-                # Pastikan total_rumah didefinisikan berdasarkan df yang digunakan
                 total_rumah = len(df)
                 
-                # Hitung jumlah rumah yang memiliki setiap kategori sanitasi tidak layak
+                # Hitung jumlah rumah per kategori dari kolom terkait
                 kategori_sanitasi_detail = {
                     "Jamban bukan leher angsa, tidak bertutup & dialirkan ke sungai": df['jamban'].apply(lambda x: 'tidak bertutup' in str(x).lower() and 'sungai' in str(x).lower()).sum(),
                     "Sarana air bersih bukan milik sendiri & tidak memenuhi syarat kesehatan": df['sarana_air_bersih'].apply(lambda x: 'bukan milik sendiri' in str(x).lower() and 'tidak memenuhi' in str(x).lower()).sum(),
@@ -625,18 +624,26 @@ elif nav == "📈 Visualisasi":
                 df_sanitasi_detail['Persentase'] = (df_sanitasi_detail['Jumlah'] / total_rumah) * 100
                 df_sanitasi_detail = df_sanitasi_detail.sort_values(by='Jumlah', ascending=False)
                 
-                sns.set_style("whitegrid")
-                plt.figure(figsize=(14, 9))
-                colors_detail = sns.color_palette("crest", len(df_sanitasi_detail))
-                ax = sns.barplot(x=df_sanitasi_detail['Jumlah'], y=df_sanitasi_detail['Kategori'], palette=colors_detail, edgecolor="black")
-                for index, (value, percent) in enumerate(zip(df_sanitasi_detail['Jumlah'], df_sanitasi_detail['Persentase'])):
-                    plt.text(value + 1, index, f"{value} rumah ({percent:.1f}%)", va='center', fontsize=14, color='black')
-                plt.xlabel("Jumlah Rumah", fontsize=14)
-                plt.ylabel("Kategori Sanitasi Tidak Layak", fontsize=14)
-                plt.title("Kategori Sanitasi Tidak Layak", fontsize=16, fontweight='bold')
-                plt.xticks(fontsize=14)
-                plt.yticks(fontsize=14)
-                tampilkan_dan_download()
+                # Buat bar chart dengan Plotly Express (horizontal)
+                fig_bar = px.bar(
+                    df_sanitasi_detail,
+                    x="Jumlah",
+                    y="Kategori",
+                    orientation="h",
+                    text=df_sanitasi_detail.apply(lambda row: f"{row['Jumlah']} rumah ({row['Persentase']:.1f}%)", axis=1),
+                    title="Kategori Sanitasi Tidak Layak",
+                    labels={"Jumlah": "Jumlah Rumah", "Kategori": "Kategori Sanitasi Tidak Layak"},
+                    color="Jumlah",
+                    color_continuous_scale="Cividis"
+                )
+                fig_bar.update_traces(textposition="outside", textfont=dict(size=12))
+                fig_bar.update_layout(
+                    xaxis_title="Jumlah Rumah",
+                    yaxis_title="Kategori Sanitasi Tidak Layak",
+                    margin=dict(l=150, r=50, t=50, b=50)
+                )
+                
+                st.plotly_chart(fig_bar, use_container_width=True)
 
             
             elif pilihan == "🚩 Perilaku Baik & Tidak Sehat (Chart + Detail)":
