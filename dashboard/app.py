@@ -418,7 +418,8 @@ elif nav == "📈 Visualisasi":
                 "🩺 Jumlah Pasien per Puskesmas",
                 "📅 Tren Date Start Pasien",
                 "📊 Distribusi Usia",
-                "🟢 Status Gizi dan Imunisasi"
+                "🟢 Status Gizi dan Imunisasi",
+                "🎯 Distribusi Pekerjaan"
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
@@ -831,7 +832,31 @@ elif nav == "📈 Visualisasi":
             
                         # Menampilkan grafik langsung tanpa fungsi tambahan
                         st.plotly_chart(fig)
-
+            elif pilihan == "🎯 Distribusi Pekerjaan":
+                st.subheader("🎯 Pekerjaan vs Jumlah Pasien")
+                # Hitung jumlah pasien berdasarkan pekerjaan
+                data = df.groupby("pekerjaan")["pasien"].count().reset_index()
+                data.columns = ["pekerjaan", "jumlah_pasien"]
+                total_pasien = data["jumlah_pasien"].sum()
+                data["persentase"] = (data["jumlah_pasien"] / total_pasien) * 100
+                data = data.sort_values(by="jumlah_pasien", ascending=False)
+                # Buat label untuk masing-masing bar
+                data["label"] = data.apply(lambda row: f"{row['jumlah_pasien']} ({row['persentase']:.1f}%)", axis=1)
+                
+                # Buat grafik bar horizontal menggunakan Plotly Express
+                fig = px.bar(
+                    data,
+                    x="jumlah_pasien",
+                    y="pekerjaan",
+                    orientation="h",
+                    text="label",
+                    color="jumlah_pasien",
+                    color_continuous_scale="viridis",
+                    title="🎯 Pekerjaan vs Jumlah Pasien"
+                )
+                fig.update_traces(textposition="outside")
+                fig.update_layout(xaxis_title="Jumlah Pasien", yaxis_title="Pekerjaan", template="plotly_white")
+                st.plotly_chart(fig, use_container_width=True)
                         
 
             
