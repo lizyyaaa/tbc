@@ -722,17 +722,25 @@ elif nav == "📈 Visualisasi":
                     # Grouping data  
                     imunisasi_gizi = df.groupby(["status_gizi", "status_imunisasi"]).size().reset_index(name="count")
             
-                    # Membuat grafik dengan Plotly  
-                    fig = px.bar(imunisasi_gizi, 
-                                 x="status_gizi", 
-                                 y="count", 
-                                 color="status_imunisasi",
-                                 barmode="group",
-                                 labels={"count": "Jumlah", "status_gizi": "Status Gizi", "status_imunisasi": "Status Imunisasi"},
-                                 title="Distribusi Status Gizi berdasarkan Status Imunisasi")
+                    # Cek apakah data kosong
+                    if imunisasi_gizi.empty:
+                        st.warning("Data tidak tersedia untuk status gizi dan imunisasi.")
+                    else:
+                        # Membuat grafik dengan Plotly  
+                        fig = px.bar(imunisasi_gizi, 
+                                     x="status_gizi", 
+                                     y="count", 
+                                     color="status_imunisasi",
+                                     barmode="group",
+                                     labels={"count": "Jumlah", "status_gizi": "Status Gizi", "status_imunisasi": "Status Imunisasi"},
+                                     title="Distribusi Status Gizi berdasarkan Status Imunisasi")
             
-                    # Gunakan fungsi tampilkan_dan_download()
-                    tampilkan_dan_download()
+                        # Tampilkan grafik dengan Plotly
+                        st.plotly_chart(fig)
+            
+                        # Gunakan fungsi tampilkan_dan_download() dengan parameter fig
+                        tampilkan_dan_download(fig, "status_gizi_imunisasi.png")
+
 
 
                         
