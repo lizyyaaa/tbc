@@ -12,10 +12,15 @@ sns.set_theme(style="whitegrid")
 # 2) Inisialisasi session_state untuk menyimpan data CSV, data manual, dan data gabungan
 if "csv_data" not in st.session_state:
     st.session_state["csv_data"] = pd.DataFrame()
+
 if "manual_data" not in st.session_state:
     st.session_state["manual_data"] = pd.DataFrame()
+
 if "data" not in st.session_state:
+    st.session_state["data"] = pd.DataFrame()  # Inisialisasi dengan DataFrame kosong
+else:
     st.session_state["data"] = st.session_state["data"].sort_index()
+
 
 # 3) Fungsi untuk menampilkan label kolom tanpa underscore
 def display_label(col_name: str) -> str:
