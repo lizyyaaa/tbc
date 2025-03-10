@@ -733,11 +733,9 @@ elif nav == "📈 Visualisasi":
                                      labels={"count": "Jumlah", "status_gizi": "Status Gizi", "status_imunisasi": "Status Imunisasi"},
                                      title="Distribusi Status Gizi berdasarkan Status Imunisasi")
             
-                        # Tampilkan grafik dengan Plotly
-                        st.plotly_chart(fig)
-            
                         # Gunakan fungsi tampilkan_dan_download() dengan parameter fig
                         tampilkan_dan_download(fig)
+
 
 
 
