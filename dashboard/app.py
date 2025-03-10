@@ -737,7 +737,7 @@ elif nav == "📈 Visualisasi":
                         st.plotly_chart(fig)
             
                         # Gunakan fungsi tampilkan_dan_download() dengan parameter fig
-                        tampilkan_dan_download(fig, "status_gizi_imunisasi.png")
+                        tampilkan_dan_download(fig)
 
 
 
