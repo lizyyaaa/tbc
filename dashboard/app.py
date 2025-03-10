@@ -425,40 +425,48 @@ elif nav == "📈 Visualisasi":
             # Visualisasi berdasarkan pilihan
             if pilihan == "📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak":
                 st.subheader("📊 Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak")
+            
                 kategori_overall = ["Rumah Tidak Layak", "Sanitasi Tidak Layak", "Perilaku Tidak Baik"]
                 persentase_overall = [persentase_tidak_layak_rumah, persentase_tidak_layak_sanitasi, persentase_tidak_baik_perilaku]
+            
+                # Sorting berdasarkan persentase tertinggi
                 sorted_idx = sorted(range(len(persentase_overall)), key=lambda i: persentase_overall[i], reverse=True)
                 kategori_overall = [kategori_overall[i] for i in sorted_idx]
                 persentase_overall = [persentase_overall[i] for i in sorted_idx]
             
-                plt.figure(figsize=(8, 4))
-                plt.bar(kategori_overall, persentase_overall, color=['red', 'orange', 'blue'])
-                plt.xlabel("Kategori", fontsize=12)
-                plt.ylabel("Persentase (%)", fontsize=12)
-                plt.title("Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak", fontsize=14, fontweight="bold")
-                plt.ylim(0, 100)
-                plt.grid(axis="y", linestyle="--", alpha=0.7)
-                for i, v in enumerate(persentase_overall):
-                    plt.text(i, v + 2, f"{v:.2f}%", ha="center", fontsize=10)
-                tampilkan_dan_download()
+                # Membuat grafik dengan Plotly
+                fig = px.bar(
+                    x=kategori_overall,
+                    y=persentase_overall,
+                    text=[f"{x:.2f}%" for x in persentase_overall],
+                    labels={"x": "Kategori", "y": "Persentase (%)"},
+                    title="Persentase Rumah, Sanitasi, dan Perilaku Tidak Layak",
+                    color=kategori_overall
+                )
+                fig.update_traces(textposition="outside")
             
-            elif pilihan == "📈 Kebiasaan CTPS":
+                st.plotly_chart(fig)
+            
+            elif elif pilihan == "📈 Kebiasaan CTPS":
                 st.subheader("📈 Kebiasaan CTPS vs Jumlah Pasien")
                 data_ctps = df.groupby("kebiasaan_ctps")["pasien"].count().reset_index()
                 data_ctps.columns = ["kebiasaan_ctps", "jumlah_pasien"]
                 data_ctps = data_ctps.sort_values(by="jumlah_pasien", ascending=False)
+                
                 total_pasien_ctps = data_ctps["jumlah_pasien"].sum()
                 data_ctps["persentase"] = (data_ctps["jumlah_pasien"] / total_pasien_ctps) * 100
             
-                plt.figure(figsize=(8, 4))
-                sns.barplot(x="jumlah_pasien", y="kebiasaan_ctps", data=data_ctps, palette="ch:s=.25,rot=-.25")
-                plt.title("Kebiasaan CTPS vs Jumlah Pasien", fontsize=14, fontweight="bold")
-                plt.xlabel("Jumlah Pasien", fontsize=12)
-                plt.ylabel("Kebiasaan CTPS", fontsize=12)
-                plt.grid(axis="x", linestyle="--", alpha=0.6)
+                fig, ax = plt.subplots(figsize=(8, 4))
+                sns.barplot(x="jumlah_pasien", y="kebiasaan_ctps", data=data_ctps, palette="Blues_r", ax=ax)
+                ax.set_title("Kebiasaan CTPS vs Jumlah Pasien", fontsize=14, fontweight="bold")
+                ax.set_xlabel("Jumlah Pasien", fontsize=12)
+                ax.set_ylabel("Kebiasaan CTPS", fontsize=12)
+                ax.grid(axis="x", linestyle="--", alpha=0.6)
+            
                 for idx, (value, pct) in enumerate(zip(data_ctps["jumlah_pasien"], data_ctps["persentase"])):
-                    plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
-                tampilkan_dan_download()
+                    ax.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
+                
+                st.pyplot(fig)
             
             elif pilihan == "🐑 Memiliki Hewan Ternak":
                 st.subheader("🐑 Memiliki Hewan Ternak vs Jumlah Pasien")
@@ -477,6 +485,7 @@ elif nav == "📈 Visualisasi":
                 for idx, (value, pct) in enumerate(zip(data_ternak["jumlah_pasien"], data_ternak["persentase"])):
                     plt.text(value + 1, idx, f"{value} ({pct:.1f}%)", va='center', fontsize=10, color="black")
                 tampilkan_dan_download()
+                
             elif pilihan == "🏠 Rumah Layak & Tidak Layak (Chart + Detail)":
                 st.subheader("🏠 Rumah Layak & Tidak Layak")
                 # --- Pie Chart Rumah Layak vs Tidak Layak ---
@@ -669,6 +678,7 @@ elif nav == "📈 Visualisasi":
             
             elif pilihan == "📅 Tren Date Start Pasien":
                 st.subheader("📅 Tren Date Start Pasien")
+                
                 # Pastikan kolom date_start dalam format datetime
                 df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
                 
@@ -677,25 +687,22 @@ elif nav == "📈 Visualisasi":
                 date_counts = df.groupby("year_month")["pasien"].count().reset_index()
                 date_counts["year_month"] = date_counts["year_month"].astype(str)  # Konversi ke string untuk sumbu X
             
-                plt.figure(figsize=(12, 6))
-                sns.lineplot(x="year_month", y="pasien", data=date_counts, marker="o", linestyle="-", color="royalblue")
-                
-                # Elemen visual
-                plt.title("Tren Date Start Pasien", fontsize=16, fontweight="bold", color="darkblue")
-                plt.xlabel("Bulan", fontsize=12, fontweight="bold")
-                plt.ylabel("Jumlah Pasien", fontsize=12, fontweight="bold")
-                plt.xticks(rotation=45)
-                plt.grid(axis="y", linestyle="--", alpha=0.6)
-                
-                # Tambahkan anotasi jumlah pasien pada tiap titik
-                for index, row in date_counts.iterrows():
-                    plt.text(row["year_month"], row["pasien"] + 2, f"{row['pasien']}", ha="center", fontsize=10, color="black")
-                
-                tampilkan_dan_download()
+                # Membuat grafik dengan Plotly
+                fig = px.line(
+                    date_counts,
+                    x="year_month",
+                    y="pasien",
+                    markers=True,
+                    labels={"year_month": "Bulan", "pasien": "Jumlah Pasien"},
+                    title="Tren Date Start Pasien"
+                )
+                fig.update_traces(line=dict(width=3))
+            
+                st.plotly_chart(fig)
                 
             elif pilihan == "📊 Distribusi Usia":
                 st.subheader("📊 Distribusi Usia")
-                
+            
                 # Pastikan kolom "age" ada dan bersifat numerik
                 if "age" not in df.columns:
                     st.warning("Kolom 'age' tidak ditemukan di data.")
@@ -709,18 +716,22 @@ elif nav == "📈 Visualisasi":
                         bins = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 100]
                         labels = [f"{bins[i]}-{bins[i+1]}" for i in range(len(bins)-1)]
                         df["age_group"] = pd.cut(df["age"], bins=bins, labels=labels, right=False)
-                        
+            
                         # Grouping berdasarkan age_group dan gender
                         age_gender = df.groupby(["age_group", "gender"]).size().reset_index(name="count")
-                        
-                        # Plot menggunakan Seaborn
-                        fig_age, ax_age = plt.subplots(figsize=(10, 5))
-                        sns.barplot(x="age_group", y="count", hue="gender", data=age_gender, palette="pastel", ax=ax_age)
-                        ax_age.set_xlabel("Rentang Usia")
-                        ax_age.set_ylabel("Jumlah")
-                        ax_age.set_title("Distribusi Usia per Gender (Clustering)")
-                        plt.xticks(rotation=45)
-                        tampilkan_dan_download()  # Menampilkan chart dan opsi download
+            
+                        # Plot menggunakan Plotly
+                        fig = px.bar(
+                            age_gender,
+                            x="age_group",
+                            y="count",
+                            color="gender",
+                            barmode="group",
+                            labels={"age_group": "Rentang Usia", "count": "Jumlah", "gender": "Jenis Kelamin"},
+                            title="Distribusi Usia per Gender"
+                        )
+
+            st.plotly_chart(fig)
                         
             elif pilihan == "🟢 Status Gizi dan Imunisasi":
                 st.subheader("🟢 Distribusi Status Gizi dan Imunisasi (Gabungan)")
