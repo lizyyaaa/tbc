@@ -549,7 +549,6 @@ elif nav == "📈 Visualisasi":
                     "Tidak ada lubang asap dapur": df['lubang_asap_dapur'].str.contains('tidak ada', case=False, na=False).sum(),
                     "Lantai Tanah": df['lantai'].str.contains('tanah', case=False, na=False).sum(),
                 }
-                # Hapus kategori dengan nilai 0
                 kategori_rumah_detail = {k: v for k, v in kategori_rumah_detail.items() if v > 0}
                 df_detail = pd.DataFrame(list(kategori_rumah_detail.items()), columns=['Kategori', 'Jumlah'])
                 df_detail['Persentase'] = (df_detail['Jumlah'] / total_rumah) * 100
@@ -567,8 +566,13 @@ elif nav == "📈 Visualisasi":
                     color="Jumlah",
                     color_continuous_scale="Viridis"
                 )
-                fig_bar.update_traces(textposition="outside")
-                fig_bar.update_layout(xaxis_range=[0, df_detail["Jumlah"].max() + 5])
+                
+                # Sesuaikan tampilan teks dan margin agar tidak terpotong
+                fig_bar.update_traces(textposition="outside", textfont=dict(size=10))
+                fig_bar.update_layout(
+                    xaxis_range=[0, df_detail["Jumlah"].max() + 5],
+                    margin=dict(l=150, r=50, t=50, b=50)
+                )
                 
                 st.plotly_chart(fig_bar, use_container_width=True)
 
