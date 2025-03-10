@@ -9,11 +9,15 @@ from io import BytesIO
 # 2) Atur tema Seaborn
 sns.set_theme(style="whitegrid")
 
-# 3) Inisialisasi session_state untuk data gabungan jika belum ada
+# 2) Inisialisasi session_state untuk menyimpan data CSV, data manual, dan data gabungan
+if "csv_data" not in st.session_state:
+    st.session_state["csv_data"] = pd.DataFrame()
+if "manual_data" not in st.session_state:
+    st.session_state["manual_data"] = pd.DataFrame()
 if "data" not in st.session_state:
     st.session_state["data"] = pd.DataFrame()
 
-# 4) Fungsi untuk menampilkan label kolom tanpa underscore
+# 3) Fungsi untuk menampilkan label kolom tanpa underscore
 def display_label(col_name: str) -> str:
     return " ".join(word.capitalize() for word in col_name.split("_"))
 
