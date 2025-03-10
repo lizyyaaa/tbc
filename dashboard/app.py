@@ -45,24 +45,23 @@ nav = st.sidebar.radio(
 )
 
 # Fungsi download chart
-def download_chart(fig):
+def download_chart(fig, filename="chart.png"):
     buffer = BytesIO()
     fig.savefig(buffer, format='png', bbox_inches='tight')  # Simpan figure ke buffer
-    buffer.seek(0)
+    buffer.seek(0)  # Kembali ke awal buffer agar bisa di-download
 
     st.download_button(
         label="⬇️ Download Gambar",
         data=buffer,
-        file_name="chart.png",
+        file_name=filename,
         mime="image/png",
-        key=f"download_chart_{datetime.now().timestamp()}"  # Key unik
+        key=f"download_chart_{datetime.now().timestamp()}"  # Key unik agar tidak bentrok
     )
 
-# Fungsi untuk menampilkan chart dan tombol download tanpa merubah grafik awal
-def tampilkan_dan_download():
-    fig = plt.gcf()  # Ambil figure yang sudah ada
+# Fungsi untuk menampilkan chart dan tombol download tanpa mengubah grafik awal
+def tampilkan_dan_download(fig, filename="chart.png"):
     st.pyplot(fig)  # Tampilkan figure di Streamlit
-    download_chart(fig)  # Download figure yang sama
+    download_chart(fig, filename)  # Download figure yang sama
 
 
 # ================================
