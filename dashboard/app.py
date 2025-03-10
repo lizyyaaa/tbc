@@ -45,23 +45,24 @@ nav = st.sidebar.radio(
 )
 
 # Fungsi download chart
-def download_chart(fig, filename="chart.png"):
+def download_chart(fig):
     buffer = BytesIO()
     fig.savefig(buffer, format='png', bbox_inches='tight')  # Simpan figure ke buffer
-    buffer.seek(0)  # Kembali ke awal buffer agar bisa di-download
+    buffer.seek(0)
 
     st.download_button(
         label="⬇️ Download Gambar",
         data=buffer,
-        file_name=filename,
+        file_name="chart.png",
         mime="image/png",
-        key=f"download_chart_{datetime.now().timestamp()}"  # Key unik agar tidak bentrok
+        key=f"download_chart_{datetime.now().timestamp()}"  # Key unik
     )
 
-# Fungsi untuk menampilkan chart dan tombol download tanpa mengubah grafik awal
-def tampilkan_dan_download(fig, filename="chart.png"):
+# Fungsi untuk menampilkan chart dan tombol download tanpa merubah grafik awal
+def tampilkan_dan_download():
+    fig = plt.gcf()  # Ambil figure yang sudah ada
     st.pyplot(fig)  # Tampilkan figure di Streamlit
-    download_chart(fig, filename)  # Download figure yang sama
+    download_chart(fig)  # Download figure yang sama
 
 
 # ================================
@@ -731,7 +732,7 @@ elif nav == "📈 Visualisasi":
                                  title="Distribusi Status Gizi berdasarkan Status Imunisasi")
             
                     # Gunakan fungsi tampilkan_dan_download()
-                    tampilkan_dan_download(fig, "status_gizi_imunisasi.png")
+                    tampilkan_dan_download()
 
 
                         
