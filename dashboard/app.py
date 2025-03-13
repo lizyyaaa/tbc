@@ -900,8 +900,8 @@ elif nav == "📈 Visualisasi":
                 fig.update_traces(textposition="outside")
                 fig.update_layout(yaxis=dict(categoryorder="total ascending"))
     
-    # Tampilkan di Streamlit
-    st.plotly_chart(fig, use_container_width=True)
+                # Tampilkan di Streamlit
+                st.plotly_chart(fig, use_container_width=True)
 
                         
 
