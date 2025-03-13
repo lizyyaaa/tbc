@@ -874,24 +874,29 @@ elif nav == "📈 Visualisasi":
             elif pilihan == "🏠 Rumah Tidak Layak vs Pekerjaan (Crosstab)":
                 st.subheader("🏠 Rumah Tidak Layak vs Pekerjaan (Crosstab)")
                 
-                # Pastikan kolom 'pekerjaan' ada di dataframe utama
                 if "pekerjaan" not in df.columns:
                     st.warning("Kolom 'pekerjaan' tidak ditemukan di dataframe utama.")
                 else:
-                    # Ambil data label dari df_rumah yang sudah ada (tidak layak)
+                    # Ambil kolom Label dari df_rumah
                     df_label = df_rumah[["Label"]].copy()
                     
-                    # Merge df (data utama) dengan label dari df_rumah berdasarkan indeks
+                    # Merge berdasarkan indeks
                     df_merge = df.merge(df_label, left_index=True, right_index=True, how="left")
+                    st.write("Data setelah merge:", df_merge.head())
                     
-                    # Hanya ambil baris yang memiliki label (misalnya "Tidak Layak")
+                    # Tampilkan nilai unik dari kolom Label
+                    st.write("Nilai unik Label:", df_merge["Label"].unique())
+                    
+                    # Filter baris dengan label "Tidak Layak"
                     df_merge = df_merge[df_merge["Label"] == "Tidak Layak"]
+                    st.write("Jumlah baris dengan Label 'Tidak Layak':", df_merge.shape[0])
                     
-                    # Buat crosstab antara kolom 'pekerjaan' dan label (meskipun hanya ada satu label)
-                    crosstab = pd.crosstab(df_merge["pekerjaan"], df_merge["Label"])
-                    
-                    st.write("Tabel Crosstab: Rumah Tidak Layak vs Pekerjaan")
-                    st.dataframe(crosstab)
+                    # Jika df_merge tidak kosong, buat crosstab
+                    if not df_merge.empty:
+                        crosstab = pd.crosstab(df_merge["pekerjaan"], df_merge["Label"])
+                        st.write("Tabel Crosstab:", crosstab)
+                    else:
+                        st.warning("Tidak ada data dengan Label 'Tidak Layak' setelah merge.")
 
 
 
