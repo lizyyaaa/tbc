@@ -871,51 +871,28 @@ elif nav == "📈 Visualisasi":
                 
                 st.plotly_chart(fig, use_container_width=True)
                 
-            elif pilihan == "🏠 Rumah Tidak Layak vs Pekerjaan":
-                st.subheader("🏠 Rumah Tidak Layak vs Pekerjaan")
+            elif pilihan == "🏠 Rumah Tidak Layak vs Pekerjaan (Crosstab)":
+                st.subheader("🏠 Rumah Tidak Layak vs Pekerjaan (Crosstab)")
                 
-                # Pastikan df (dataframe utama) sudah memiliki kolom 'pekerjaan'
+                # Pastikan kolom 'pekerjaan' ada di dataframe utama
                 if "pekerjaan" not in df.columns:
-                    st.warning("Kolom 'pekerjaan' tidak ditemukan pada data utama.")
+                    st.warning("Kolom 'pekerjaan' tidak ditemukan di dataframe utama.")
                 else:
-                    # Ambil indeks dari df_rumah yang berlabel "Tidak Layak"
-                    idx_tidak_layak = df_rumah[df_rumah["Label"] == "Tidak Layak"].index
+                    # Ambil data label dari df_rumah yang sudah ada (tidak layak)
+                    df_label = df_rumah[["Label"]].copy()
                     
-                    # Saring dataframe utama berdasarkan indeks tersebut
-                    df_tidak_layak = df.loc[idx_tidak_layak]
+                    # Merge df (data utama) dengan label dari df_rumah berdasarkan indeks
+                    df_merge = df.merge(df_label, left_index=True, right_index=True, how="left")
                     
-                    # Buat agregasi berdasarkan 'pekerjaan'
-                    data_rumah = df_tidak_layak.groupby("pekerjaan")["pasien"].count().reset_index()
-                    data_rumah.columns = ["pekerjaan", "jumlah_rumah_tidak_layak"]
-                    data_rumah = data_rumah.sort_values(by="jumlah_rumah_tidak_layak", ascending=False)
+                    # Hanya ambil baris yang memiliki label (misalnya "Tidak Layak")
+                    df_merge = df_merge[df_merge["Label"] == "Tidak Layak"]
                     
-                    # Hitung persentase tiap kategori
-                    total_rumah = data_rumah["jumlah_rumah_tidak_layak"].sum()
-                    data_rumah["persentase"] = (data_rumah["jumlah_rumah_tidak_layak"] / total_rumah) * 100
-                    data_rumah["label"] = data_rumah.apply(
-                        lambda row: f"{row['jumlah_rumah_tidak_layak']} ({row['persentase']:.1f}%)", axis=1
-                    )
+                    # Buat crosstab antara kolom 'pekerjaan' dan label (meskipun hanya ada satu label)
+                    crosstab = pd.crosstab(df_merge["pekerjaan"], df_merge["Label"])
                     
-                    # Buat plot dengan Plotly Express
-                    fig = px.bar(
-                        data_rumah,
-                        x="jumlah_rumah_tidak_layak",
-                        y="pekerjaan",
-                        orientation="h",
-                        text="label",
-                        color="jumlah_rumah_tidak_layak",
-                        color_continuous_scale="viridis",
-                        title="🏠 Rumah Tidak Layak vs Pekerjaan"
-                    )
-                    fig.update_traces(textposition="outside")
-                    fig.update_layout(
-                        xaxis_title="Jumlah Rumah Tidak Layak",
-                        yaxis_title="Pekerjaan",
-                        template="plotly_white",
-                        yaxis=dict(categoryorder="total ascending")
-                    )
-                    
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.write("Tabel Crosstab: Rumah Tidak Layak vs Pekerjaan")
+                    st.dataframe(crosstab)
+
 
 
                         
