@@ -874,30 +874,42 @@ elif nav == "📈 Visualisasi":
             elif pilihan == "🏠 Rumah Tidak Layak vs Pekerjaan (Crosstab)":
                 st.subheader("🏠 Rumah Tidak Layak vs Pekerjaan (Crosstab)")
                 
+                # Cek kolom 'pekerjaan' di dataframe utama
                 if "pekerjaan" not in df.columns:
                     st.warning("Kolom 'pekerjaan' tidak ditemukan di dataframe utama.")
                 else:
-                    # Reset indeks kedua dataframe agar punya kunci yang sama
-                    df_reset = df.reset_index().rename(columns={'index': 'idx'})
-                    df_rumah_reset = df_rumah.reset_index().rename(columns={'index': 'idx'})
+                    # Tampilkan beberapa baris untuk debugging
+                    st.write("Beberapa baris df:", df.head())
+                    st.write("Beberapa baris df_rumah:", df_rumah.head())
                     
-                    # Merge berdasarkan kunci 'idx'
-                    df_merge = df_reset.merge(df_rumah_reset[['idx', 'Label']], on='idx', how='left')
-                    st.write("Data setelah merge (reset index):", df_merge.head())
+                    # Pastikan kedua dataframe memiliki indeks yang sama (jika tidak, gunakan join berdasarkan kolom kunci yang sesuai)
+                    # Di sini kita gunakan intersection dari indeks
+                    common_index = df.index.intersection(df_rumah.index)
+                    st.write("Jumlah indeks yang sama:", len(common_index))
                     
-                    # Tampilkan nilai unik dari Label
-                    st.write("Nilai unik Label:", df_merge["Label"].unique())
-                    
-                    # Filter data dengan Label "Tidak Layak"
-                    df_merge = df_merge[df_merge["Label"] == "Tidak Layak"]
-                    st.write("Jumlah baris dengan Label 'Tidak Layak':", df_merge.shape[0])
-                    
-                    # Buat crosstab jika data tidak kosong
-                    if not df_merge.empty:
-                        crosstab = pd.crosstab(df_merge["pekerjaan"], df_merge["Label"])
-                        st.write("Tabel Crosstab:", crosstab)
+                    if common_index.empty:
+                        st.warning("Tidak ada indeks yang sama antara df dan df_rumah. Pastikan kedua dataframe berasal dari data yang sama atau memiliki kolom kunci yang bisa digunakan untuk merge.")
                     else:
-                        st.warning("Tidak ada data dengan Label 'Tidak Layak' setelah merge.")
+                        # Filter df hanya pada indeks yang sama
+                        df_common = df.loc[common_index].copy()
+                        
+                        # Join dengan kolom Label dari df_rumah (pastikan df_rumah memiliki Label yang benar)
+                        df_merge = df_common.join(df_rumah[['Label']], how="left")
+                        st.write("Data setelah join:", df_merge.head())
+                        
+                        # Tampilkan nilai unik dari Label untuk memastikan nilai yang ada
+                        st.write("Nilai unik Label:", df_merge["Label"].unique())
+                        
+                        # Filter baris yang memiliki Label "Tidak Layak"
+                        df_merge = df_merge[df_merge["Label"] == "Tidak Layak"]
+                        st.write("Jumlah baris dengan Label 'Tidak Layak':", df_merge.shape[0])
+                        
+                        if df_merge.empty:
+                            st.warning("Setelah join, tidak ada baris dengan Label 'Tidak Layak'. Periksa kembali proses pembuatan df_rumah dan pastikan Label telah dihitung dengan benar.")
+                        else:
+                            # Buat crosstab antara kolom 'pekerjaan' dan Label
+                            crosstab = pd.crosstab(df_merge["pekerjaan"], df_merge["Label"])
+                            st.write("Tabel Crosstab:", crosstab)
 
 
 
