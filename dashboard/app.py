@@ -877,26 +877,28 @@ elif nav == "📈 Visualisasi":
                 if "pekerjaan" not in df.columns:
                     st.warning("Kolom 'pekerjaan' tidak ditemukan di dataframe utama.")
                 else:
-                    # Ambil kolom Label dari df_rumah
-                    df_label = df_rumah[["Label"]].copy()
+                    # Reset indeks kedua dataframe agar punya kunci yang sama
+                    df_reset = df.reset_index().rename(columns={'index': 'idx'})
+                    df_rumah_reset = df_rumah.reset_index().rename(columns={'index': 'idx'})
                     
-                    # Merge berdasarkan indeks
-                    df_merge = df.merge(df_label, left_index=True, right_index=True, how="left")
-                    st.write("Data setelah merge:", df_merge.head())
+                    # Merge berdasarkan kunci 'idx'
+                    df_merge = df_reset.merge(df_rumah_reset[['idx', 'Label']], on='idx', how='left')
+                    st.write("Data setelah merge (reset index):", df_merge.head())
                     
-                    # Tampilkan nilai unik dari kolom Label
+                    # Tampilkan nilai unik dari Label
                     st.write("Nilai unik Label:", df_merge["Label"].unique())
                     
-                    # Filter baris dengan label "Tidak Layak"
+                    # Filter data dengan Label "Tidak Layak"
                     df_merge = df_merge[df_merge["Label"] == "Tidak Layak"]
                     st.write("Jumlah baris dengan Label 'Tidak Layak':", df_merge.shape[0])
                     
-                    # Jika df_merge tidak kosong, buat crosstab
+                    # Buat crosstab jika data tidak kosong
                     if not df_merge.empty:
                         crosstab = pd.crosstab(df_merge["pekerjaan"], df_merge["Label"])
                         st.write("Tabel Crosstab:", crosstab)
                     else:
                         st.warning("Tidak ada data dengan Label 'Tidak Layak' setelah merge.")
+
 
 
 
