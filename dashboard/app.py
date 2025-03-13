@@ -870,38 +870,53 @@ elif nav == "📈 Visualisasi":
                 )
                 
                 st.plotly_chart(fig, use_container_width=True)
+                
             elif pilihan == "🏠 Rumah Tidak Layak vs Pekerjaan":
                 st.subheader("🏠 Rumah Tidak Layak vs Pekerjaan")
                 
-                # Pastikan df_rumah sudah memiliki kolom "pekerjaan" dan label "Tidak Layak"
-                # Grup data berdasarkan 'pekerjaan' dari rumah yang tidak layak
-                data_rumah = df_rumah[df_rumah["Label"] == "Tidak Layak"].groupby("pekerjaan")["Label"].count().reset_index()
-                data_rumah.columns = ["pekerjaan", "jumlah_rumah_tidak_layak"]
-                data_rumah = data_rumah.sort_values(by="jumlah_rumah_tidak_layak", ascending=False)
-                
-                # Hitung persentase masing-masing pekerjaan
-                total_rumah = data_rumah["jumlah_rumah_tidak_layak"].sum()
-                data_rumah["persentase"] = (data_rumah["jumlah_rumah_tidak_layak"] / total_rumah) * 100
-                
-                # Buat plot dengan Plotly
-                fig = px.bar(
-                    data_rumah, 
-                    x="jumlah_rumah_tidak_layak", 
-                    y="pekerjaan", 
-                    orientation="h",
-                    text=data_rumah["jumlah_rumah_tidak_layak"].astype(str) + " (" + data_rumah["persentase"].round(1).astype(str) + "%)",
-                    labels={"jumlah_rumah_tidak_layak": "Jumlah Rumah Tidak Layak", "pekerjaan": "Pekerjaan"},
-                    title="🏠 Rumah Tidak Layak vs Pekerjaan",
-                    color="jumlah_rumah_tidak_layak", 
-                    color_continuous_scale="Blues"
-                )
-            
-                # Sesuaikan tampilan teks label dan urutan kategori
-                fig.update_traces(textposition="outside")
-                fig.update_layout(yaxis=dict(categoryorder="total ascending"))
-    
-                # Tampilkan di Streamlit
-                st.plotly_chart(fig, use_container_width=True)
+                # Pastikan data df_rumah sudah memiliki kolom "pekerjaan" dan kolom "Label" dengan nilai "Tidak Layak"
+                if "pekerjaan" not in df_rumah.columns:
+                    st.warning("Kolom 'pekerjaan' tidak ditemukan pada data rumah.")
+                else:
+                    # Filter data yang berlabel "Tidak Layak"
+                    df_rumah_tidak_layak = df_rumah[df_rumah["Label"] == "Tidak Layak"]
+                    
+                    # Buat tabel crosstab dengan mengelompokkan berdasarkan 'pekerjaan'
+                    crosstab_rumah = pd.crosstab(df_rumah_tidak_layak["pekerjaan"], df_rumah_tidak_layak["Label"])
+                    st.write("Tabel Crosstab: Rumah Tidak Layak dengan Pekerjaan")
+                    st.dataframe(crosstab_rumah)
+                    
+                    # Jika ingin visualisasi, kita bisa membuat grafik batang horizontal dari tabel tersebut.
+                    # Karena hanya ada satu kolom ("Tidak Layak"), kita hitung frekuensinya per pekerjaan.
+                    data_rumah = df_rumah_tidak_layak.groupby("pekerjaan")["Label"].count().reset_index()
+                    data_rumah.columns = ["pekerjaan", "jumlah_rumah_tidak_layak"]
+                    data_rumah = data_rumah.sort_values(by="jumlah_rumah_tidak_layak", ascending=False)
+                    
+                    # Hitung persentase tiap kategori pekerjaan
+                    total_rumah = data_rumah["jumlah_rumah_tidak_layak"].sum()
+                    data_rumah["persentase"] = (data_rumah["jumlah_rumah_tidak_layak"] / total_rumah) * 100
+                    data_rumah["label"] = data_rumah.apply(lambda row: f"{row['jumlah_rumah_tidak_layak']} ({row['persentase']:.1f}%)", axis=1)
+                    
+                    # Buat plot dengan Plotly Express
+                    fig = px.bar(
+                        data_rumah,
+                        x="jumlah_rumah_tidak_layak",
+                        y="pekerjaan",
+                        orientation="h",
+                        text="label",
+                        color="jumlah_rumah_tidak_layak",
+                        color_continuous_scale="viridis",
+                        title="🏠 Rumah Tidak Layak vs Pekerjaan"
+                    )
+                    fig.update_traces(textposition="outside")
+                    fig.update_layout(
+                        xaxis_title="Jumlah Rumah Tidak Layak",
+                        yaxis_title="Pekerjaan",
+                        template="plotly_white",
+                        yaxis=dict(categoryorder="total ascending")
+                    )
+                    
+                    st.plotly_chart(fig, use_container_width=True)
 
                         
 
