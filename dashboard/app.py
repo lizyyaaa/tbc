@@ -219,15 +219,15 @@ if nav == "🏠 Home":
     
     st.markdown("## Form Input Data Manual Tambahan")
 
-    # Inisialisasi session state untuk menyimpan pilihan sebelumnya
+    # 🔹 Inisialisasi session state jika belum ada
     if "type_tb_selected" not in st.session_state:
         st.session_state["type_tb_selected"] = []
     
-    # 🔹 Pilih apakah dari daftar atau input manual
+    # 🔹 Pilihan jenis TB dengan multiselect
     st.write("### Pilih Type TB:")
-    type_tb_selected = st.multiselect("Pilih jenis TB:", tb_options, default=st.session_state["type_tb_selected"])
+    type_tb_selected = st.multiselect("Pilih jenis TB:", tb_options, default=st.session_state.get("type_tb_selected", []))
     
-    # 🔹 Input manual jika pengguna ingin menulis sendiri jenis TB lain
+    # 🔹 Input manual jika pengguna ingin menambahkan jenis TB lain
     type_tb_other = st.text_input("Masukkan jenis TB lainnya jika tidak ada dalam daftar:")
     
     # 🔹 Simpan hasil pemilihan ke session_state sebelum form
@@ -237,8 +237,8 @@ if nav == "🏠 Home":
     with st.form(key="manual_form"):
         input_manual = {}
     
-        # Jika ada pilihan dari dropdown atau manual, simpan
-        input_manual["type_tb"] = st.session_state["type_tb_selected"]
+        # Jika ada pilihan dari dropdown atau input manual, simpan
+        input_manual["type_tb"] = st.session_state["type_tb_selected"][:]
         if type_tb_other.strip():
             input_manual["type_tb"].append(type_tb_other.strip())
     
@@ -247,7 +247,7 @@ if nav == "🏠 Home":
         input_manual["date_start"] = st.date_input("Tanggal Mulai", value=datetime.today())
         input_manual["tgl_kunjungan"] = st.date_input("Tanggal Kunjungan", value=datetime.today())
     
-        # ✅ Tombol submit ada di dalam form
+        # ✅ Tambahkan tombol submit agar form bisa terkirim
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
     
     # ✅ Proses setelah submit
