@@ -13,7 +13,7 @@ def get_connection():
             host="localhost",      # MySQL berjalan secara lokal di XAMPP
             user="root",           # Username default XAMPP
             password="",           # Password default (kosong) kecuali sudah diubah
-            database="tb_dashboardtbc" # Nama database yang sudah kamu buat
+            database="tb_analisistbc" # Nama database yang sudah kamu buat
         )
         return conn
     except mysql.connector.Error as err:
