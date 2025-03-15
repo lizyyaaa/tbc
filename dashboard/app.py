@@ -233,18 +233,15 @@ if nav == "🏠 Home":
             # Kolom yang memiliki opsi di option_dict
             elif col in option_dict:
                 if col == "type_tb":  # Menambahkan kasus khusus untuk type_tb
-                    type_tb_choice = st.selectbox(label, option_dict[col])
+                    type_tb_choice = st.selectbox(label, option_dict[col], key="type_tb_select")
                     if type_tb_choice == "Lainnya":
-                        type_tb_other = st.text_input("Masukkan jenis TB lainnya:", value="")
-                        input_manual[col] = type_tb_other if type_tb_other else type_tb_choice
+                        type_tb_other = st.text_input("Masukkan jenis TB lainnya:", key="type_tb_other")
+                        input_manual[col] = type_tb_other.strip() if type_tb_other.strip() else type_tb_choice
                     else:
                         input_manual[col] = type_tb_choice
                 else:
                     options = option_dict[col]
-                    if options:
-                        input_manual[col] = st.selectbox(label, options)
-                    else:
-                        input_manual[col] = st.text_input(label, value="")
+                    input_manual[col] = st.selectbox(label, options) if options else st.text_input(label, value="")
             else:
                 # Kolom lainnya default ke text_input
                 input_manual[col] = st.text_input(label, value="")
