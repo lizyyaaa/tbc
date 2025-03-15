@@ -245,7 +245,7 @@ if nav == "🏠 Home":
                             input_manual[col] = st.selectbox(label, options)
                     else:
                         input_manual[col] = st.text_input(label, value="")
-             else:
+                else:
                     # Kolom lainnya default ke text_input
                     input_manual[col] = st.text_input(label, value="")
         
