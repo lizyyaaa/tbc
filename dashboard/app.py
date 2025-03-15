@@ -219,37 +219,38 @@ if nav == "🏠 Home":
     
     st.markdown("## Form Input Data Manual Tambahan")
 
-    # Simpan pilihan pengguna untuk Type TB
+    # Inisialisasi session state untuk menyimpan pilihan sebelumnya
     if "type_tb_selected" not in st.session_state:
         st.session_state["type_tb_selected"] = []
     
-    # Pilih apakah dari daftar atau input manual
+    # 🔹 Pilih apakah dari daftar atau input manual
     st.write("### Pilih Type TB:")
     type_tb_selected = st.multiselect("Pilih jenis TB:", tb_options, default=st.session_state["type_tb_selected"])
     
-    # Input manual jika pengguna ingin menulis sendiri jenis TB lain
+    # 🔹 Input manual jika pengguna ingin menulis sendiri jenis TB lain
     type_tb_other = st.text_input("Masukkan jenis TB lainnya jika tidak ada dalam daftar:")
     
-    # Simpan hasil pemilihan ke session_state sebelum form
+    # 🔹 Simpan hasil pemilihan ke session_state sebelum form
     st.session_state["type_tb_selected"] = type_tb_selected
     
-    # Form dimulai di sini
+    # ✅ Form untuk input tambahan
     with st.form(key="manual_form"):
         input_manual = {}
     
-        # Gunakan hasil dari multiselect & text input sebelumnya
-        if st.session_state["type_tb_selected"] or type_tb_other.strip():
-            input_manual["type_tb"] = st.session_state["type_tb_selected"] + ([type_tb_other] if type_tb_other.strip() else [])
+        # Jika ada pilihan dari dropdown atau manual, simpan
+        input_manual["type_tb"] = st.session_state["type_tb_selected"]
+        if type_tb_other.strip():
+            input_manual["type_tb"].append(type_tb_other.strip())
     
         input_manual["pasien"] = st.text_input("Nama Pasien", value="")
         input_manual["age"] = st.number_input("Usia", min_value=0, step=1, value=0)
         input_manual["date_start"] = st.date_input("Tanggal Mulai", value=datetime.today())
         input_manual["tgl_kunjungan"] = st.date_input("Tanggal Kunjungan", value=datetime.today())
     
-        # Tombol submit dalam form
+        # ✅ Tombol submit ada di dalam form
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
     
-    # Proses setelah submit
+    # ✅ Proses setelah submit
     if submitted_manual:
         df_manual = pd.DataFrame([input_manual])
         df_manual["date_start"] = pd.to_datetime(df_manual["date_start"]).dt.strftime('%Y-%m-%d')
