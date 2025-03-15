@@ -231,23 +231,23 @@ if nav == "🏠 Home":
             elif col in ["date_start", "tgl_kunjungan"]:
                 input_manual[col] = st.date_input(label, value=datetime.today())
             # Kolom yang memiliki opsi di option_dict
-           elif col in option_dict:
-                options = option_dict[col]
-                if options:
-                    # Khusus untuk type_tb, tambahkan opsi manual
-                    if col == "type_tb":
-                        pilihan_lainnya = st.selectbox(label, options + ["Lainnya (ketik sendiri)"])
-                        if pilihan_lainnya == "Lainnya (ketik sendiri)":
-                            input_manual[col] = st.text_input("Masukkan keterangan TB:", value="")
+            elif col in option_dict:
+                    options = option_dict[col]
+                    if options:
+                        # Khusus untuk type_tb, tambahkan opsi manual
+                        if col == "type_tb":
+                            pilihan_lainnya = st.selectbox(label, options + ["Lainnya (ketik sendiri)"])
+                            if pilihan_lainnya == "Lainnya (ketik sendiri)":
+                                input_manual[col] = st.text_input("Masukkan keterangan TB:", value="")
+                            else:
+                                input_manual[col] = pilihan_lainnya
                         else:
-                            input_manual[col] = pilihan_lainnya
+                            input_manual[col] = st.selectbox(label, options)
                     else:
-                        input_manual[col] = st.selectbox(label, options)
-                else:
+                        input_manual[col] = st.text_input(label, value="")
+             else:
+                    # Kolom lainnya default ke text_input
                     input_manual[col] = st.text_input(label, value="")
-            else:
-                # Kolom lainnya default ke text_input
-                input_manual[col] = st.text_input(label, value="")
         
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
     
