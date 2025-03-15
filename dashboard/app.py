@@ -428,7 +428,8 @@ elif nav == "📈 Visualisasi":
                 "📅 Tren Date Start Pasien",
                 "📊 Distribusi Usia",
                 "🟢 Status Gizi dan Imunisasi",
-                "🎯 Distribusi Pekerjaan"
+                "🎯 Distribusi Pekerjaan",
+                "🛠️ Crosstab Sanitasi vs Pekerjaan"
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
@@ -521,6 +522,45 @@ elif nav == "📈 Visualisasi":
                 # Tampilkan di Streamlit dengan fitur zoom, pan, dan download otomatis
                 st.plotly_chart(fig, use_container_width=True)
                 
+            elif pilihan == "🛠️ Crosstab Sanitasi vs Pekerjaan":
+                st.subheader("🛠️ Crosstab Sanitasi vs Pekerjaan")
+                
+                # Hitung Crosstab Sanitasi vs Pekerjaan
+                crosstab_sanitasi = pd.crosstab(
+                    df_sanitasi_with_pekerjaan["pekerjaan"],
+                    df_sanitasi_with_pekerjaan["Sanitasi_Label"]
+                )
+            
+                # Tambahkan kolom Total dan persentase "Tidak Layak"
+                crosstab_sanitasi["Total"] = crosstab_sanitasi.sum(axis=1)
+                if "Tidak Layak" in crosstab_sanitasi.columns:
+                    crosstab_sanitasi["% Tidak Layak"] = (
+                        crosstab_sanitasi["Tidak Layak"] / crosstab_sanitasi["Total"]
+                    ) * 100
+            
+                # Tampilkan Crosstab di Streamlit
+                st.write("### 🔹 Crosstab Sanitasi vs Pekerjaan")
+                st.dataframe(crosstab_sanitasi)
+            
+                # Konversi ke format long untuk Plotly
+                crosstab_long = crosstab_sanitasi.reset_index().melt(id_vars=["pekerjaan"], var_name="Sanitasi_Label", value_name="Jumlah")
+            
+                # Buat visualisasi dengan Plotly
+                fig = px.bar(
+                    crosstab_long,
+                    x="pekerjaan",
+                    y="Jumlah",
+                    color="Sanitasi_Label",
+                    text="Jumlah",
+                    title="🚰 Distribusi Sanitasi vs Pekerjaan",
+                    labels={"pekerjaan": "Pekerjaan", "Jumlah": "Jumlah Kasus"},
+                    barmode="group",
+                )
+                fig.update_traces(textposition="outside")
+            
+                # Tampilkan Plotly Chart
+                st.plotly_chart(fig)
+    
             elif pilihan == "🏠 Rumah Layak & Tidak Layak (Chart + Detail)":
                 st.subheader("🏠 Rumah Layak & Tidak Layak")
                 
