@@ -159,7 +159,7 @@ if nav == "🏠 Home":
                       'Pindrikan Kidul', 'Sumurejo', 'Terboyo Wetan', 'Muktiharjo Kidul', 'Pedurungan Lor', 'Kalicari', 
                       'Cabean', 'Karanganyar', 'Panggung Lor', 'Purwosari', 'Panggung Kidul', 'Bulu Lor', 'Plombokan', 
                       'Kaliwiru', 'Pangangan', 'Kalibanteng Kidul', 'Jrakah'],
-        "type_tb": [1.0, 2.0],
+        "type_tb": ['TB SO', 'TB RO', 'Kosong', 'Lainnya'],
         "status_hamil": ['Tidak', 'Ya'],
         "pekerjaan": ['Tidak Bekerja', 'Ibu Rumah Tangga', 'Pegawai Swasta', 'Lainnya', 'Pelajar / Mahasiswa', 
                       'Wiraswasta', 'Nelayan', 'Petani', 'Pensiunan', 'TNI / Polri'],
@@ -222,7 +222,7 @@ if nav == "🏠 Home":
         input_manual = {}
         for col in fields_order:
             label = col.replace("_", " ").title()  # Ganti dengan fungsi display_label jika ada
-            
+    
             # Kolom dengan tipe khusus
             if col == "pasien":
                 input_manual[col] = st.text_input(label, value="")
@@ -232,16 +232,25 @@ if nav == "🏠 Home":
                 input_manual[col] = st.date_input(label, value=datetime.today())
             # Kolom yang memiliki opsi di option_dict
             elif col in option_dict:
-                options = option_dict[col]
-                if options:
-                    input_manual[col] = st.selectbox(label, options)
+                if col == "type_tb":  # Menambahkan kasus khusus untuk type_tb
+                    type_tb_choice = st.selectbox(label, option_dict[col])
+                    if type_tb_choice == "Lainnya":
+                        type_tb_other = st.text_input("Masukkan jenis TB lainnya:", value="")
+                        input_manual[col] = type_tb_other if type_tb_other else type_tb_choice
+                    else:
+                        input_manual[col] = type_tb_choice
                 else:
-                    input_manual[col] = st.text_input(label, value="")
+                    options = option_dict[col]
+                    if options:
+                        input_manual[col] = st.selectbox(label, options)
+                    else:
+                        input_manual[col] = st.text_input(label, value="")
             else:
                 # Kolom lainnya default ke text_input
                 input_manual[col] = st.text_input(label, value="")
-        
+    
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
+
     
     if submitted_manual:
         # Ubah nilai date_input menjadi pd.Timestamp, lalu format menjadi string "YYYY-MM-DD"
