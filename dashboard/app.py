@@ -159,7 +159,7 @@ if nav == "🏠 Home":
                       'Pindrikan Kidul', 'Sumurejo', 'Terboyo Wetan', 'Muktiharjo Kidul', 'Pedurungan Lor', 'Kalicari', 
                       'Cabean', 'Karanganyar', 'Panggung Lor', 'Purwosari', 'Panggung Kidul', 'Bulu Lor', 'Plombokan', 
                       'Kaliwiru', 'Pangangan', 'Kalibanteng Kidul', 'Jrakah'],
-        "type_tb": [1.0, 2.0],
+        "type_tb": ['tb SO', 'tb RO', ' '],
         "status_hamil": ['Tidak', 'Ya'],
         "pekerjaan": ['Tidak Bekerja', 'Ibu Rumah Tangga', 'Pegawai Swasta', 'Lainnya', 'Pelajar / Mahasiswa', 
                       'Wiraswasta', 'Nelayan', 'Petani', 'Pensiunan', 'TNI / Polri'],
