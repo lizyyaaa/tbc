@@ -227,7 +227,7 @@ if nav == "🏠 Home":
     
         for col in fields_order:
             label = col.replace("_", " ").title()
-            
+    
             if col == "pasien":
                 input_manual[col] = st.text_input(label, value=st.session_state["input_manual"].get(col, ""))
             elif col == "age":
@@ -235,33 +235,38 @@ if nav == "🏠 Home":
             elif col in ["date_start", "tgl_kunjungan"]:
                 input_manual[col] = st.date_input(label, value=st.session_state["input_manual"].get(col, datetime.today()))
             elif col in option_dict:
-                options = option_dict[col]
-                if col == "type_tb":
-                    pilihan = st.radio(label, ["Pilih dari daftar", "Lainnya (ketik sendiri)"], horizontal=True)
-                    if pilihan == "Pilih dari daftar":
-                        input_manual[col] = st.selectbox("Pilih Tipe TB:", options, index=0)
-                    else:
-                        input_manual[col] = st.text_input("Masukkan keterangan TB:", value=st.session_state["input_manual"].get(col, ""))
+                # Radio button untuk memilih antara opsi dropdown atau input manual
+                pilihan_mode = st.radio(f"Pilih cara input {label}:", ["Pilih dari daftar", "Ketik sendiri"], 
+                                        index=0 if st.session_state["input_manual"].get(col, "") in option_dict[col] else 1)
+                
+                if pilihan_mode == "Pilih dari daftar":
+                    input_manual[col] = st.selectbox(label, option_dict[col], 
+                                                     index=option_dict[col].index(st.session_state["input_manual"].get(col, option_dict[col][0])) if st.session_state["input_manual"].get(col, "") in option_dict[col] else 0)
                 else:
-                    input_manual[col] = st.selectbox(label, options)
+                    input_manual[col] = st.text_input(f"Masukkan keterangan {label}:", value=st.session_state["input_manual"].get(col, ""))
             else:
                 input_manual[col] = st.text_input(label, value=st.session_state["input_manual"].get(col, ""))
     
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
     
-        if submitted_manual:
-            st.session_state["input_manual"] = input_manual.copy()
-            
-            df_manual = pd.DataFrame([input_manual])
-            df_manual["date_start"] = pd.to_datetime(df_manual["date_start"]).dt.strftime('%Y-%m-%d')
-            df_manual["tgl_kunjungan"] = pd.to_datetime(df_manual["tgl_kunjungan"]).dt.strftime('%Y-%m-%d')
+    if submitted_manual:
+        # Simpan input terbaru ke session_state
+        st.session_state["input_manual"] = input_manual.copy()
     
-            st.session_state["manual_data"] = pd.concat([st.session_state["manual_data"], df_manual], ignore_index=True)
-            st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
-            
-            st.success("✅ Data manual tambahan berhasil ditambahkan!")
-            st.dataframe(df_manual)
-            st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
+        # Konversi input ke DataFrame dan format tanggal
+        df_manual = pd.DataFrame([input_manual])
+        df_manual["date_start"] = pd.to_datetime(df_manual["date_start"]).dt.strftime('%Y-%m-%d')
+        df_manual["tgl_kunjungan"] = pd.to_datetime(df_manual["tgl_kunjungan"]).dt.strftime('%Y-%m-%d')
+    
+        # Simpan data manual baru
+        st.session_state["manual_data"] = pd.concat([st.session_state["manual_data"], df_manual], ignore_index=True)
+    
+        # Gabungkan dengan data utama
+        st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
+    
+        st.success("✅ Data manual tambahan berhasil ditambahkan!")
+        st.dataframe(df_manual)
+        st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
     
     # Tampilkan data gabungan jika sudah ada
     if not st.session_state["data"].empty:
