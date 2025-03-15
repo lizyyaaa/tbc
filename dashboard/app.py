@@ -281,12 +281,28 @@ elif nav == "📈 Visualisasi":
         # Preprocessing dasar: imputasi, hapus duplikasi, konversi tanggal
         kolom_numerik = df.select_dtypes(include=['number']).columns
         kolom_kategori = df.select_dtypes(include=['object']).columns
+        
+        # Isi nilai NaN dengan modus (nilai yang paling sering muncul)
         df[kolom_kategori] = df[kolom_kategori].apply(lambda x: x.fillna(x.mode()[0]))
-        df[kolom_numerik] = df[kolom_numerik].apply(lambda x: x.fillna(x.mean()))
+        df[kolom_numerik] = df[kolom_numerik].apply(lambda x: x.fillna(x.mode()[0]))
+        
+        # Hapus duplikasi
         df = df.drop_duplicates()
+        
+        # Konversi tanggal jika kolom "date_start" ada
         if "date_start" in df.columns:
             df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
             df["year_month"] = df["date_start"].dt.to_period("M").astype(str)
+        
+
+# Hapus duplikasi
+df = df.drop_duplicates()
+
+# Konversi tanggal jika kolom "date_start" ada
+if "date_start" in df.columns:
+    df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
+    df["year_month"] = df["date_start"].dt.to_period("M").astype(str)
+
         
         # Definisi kategori untuk analisis skor
         kategori_rumah = [
