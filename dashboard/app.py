@@ -227,7 +227,7 @@ if nav == "🏠 Home":
     
         for col in fields_order:
             label = col.replace("_", " ").title()
-    
+            
             if col == "pasien":
                 input_manual[col] = st.text_input(label, value=st.session_state["input_manual"].get(col, ""))
             elif col == "age":
@@ -236,13 +236,12 @@ if nav == "🏠 Home":
                 input_manual[col] = st.date_input(label, value=st.session_state["input_manual"].get(col, datetime.today()))
             elif col in option_dict:
                 options = option_dict[col]
-    
                 if col == "type_tb":
-                    pilihan_lainnya = st.selectbox(label, options + ["Lainnya (ketik sendiri)"])
-                    if pilihan_lainnya == "Lainnya (ketik sendiri)":
-                        input_manual[col] = st.text_input("Masukkan keterangan TB:", value=st.session_state["input_manual"].get(col, ""))
+                    pilihan = st.radio(label, ["Pilih dari daftar", "Lainnya (ketik sendiri)"], horizontal=True)
+                    if pilihan == "Pilih dari daftar":
+                        input_manual[col] = st.selectbox("Pilih Tipe TB:", options, index=0)
                     else:
-                        input_manual[col] = pilihan_lainnya
+                        input_manual[col] = st.text_input("Masukkan keterangan TB:", value=st.session_state["input_manual"].get(col, ""))
                 else:
                     input_manual[col] = st.selectbox(label, options)
             else:
@@ -251,20 +250,15 @@ if nav == "🏠 Home":
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
     
         if submitted_manual:
-            # Simpan input terbaru ke session_state untuk mempertahankan nilai yang telah diinput
             st.session_state["input_manual"] = input_manual.copy()
-    
-            # Konversi input ke DataFrame dan format tanggal
+            
             df_manual = pd.DataFrame([input_manual])
             df_manual["date_start"] = pd.to_datetime(df_manual["date_start"]).dt.strftime('%Y-%m-%d')
             df_manual["tgl_kunjungan"] = pd.to_datetime(df_manual["tgl_kunjungan"]).dt.strftime('%Y-%m-%d')
     
-            # Simpan data manual baru
             st.session_state["manual_data"] = pd.concat([st.session_state["manual_data"], df_manual], ignore_index=True)
-    
-            # Gabungkan dengan data utama
             st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
-    
+            
             st.success("✅ Data manual tambahan berhasil ditambahkan!")
             st.dataframe(df_manual)
             st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
