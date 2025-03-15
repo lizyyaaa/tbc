@@ -237,26 +237,37 @@ if nav == "🏠 Home":
         input_manual["pasien"] = st.text_input("Nama Pasien", value="")
         input_manual["age"] = st.number_input("Usia", min_value=0, step=1, value=0)
         input_manual["date_start"] = st.date_input("Tanggal Mulai", value=datetime.today())
+        input_manual["tgl_kunjungan"] = st.date_input("Tanggal Kunjungan", value=datetime.today())
     
-    submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
-
-
+        # Tombol submit
+        submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
     
+    # Proses setelah submit
     if submitted_manual:
         # Ubah nilai date_input menjadi pd.Timestamp, lalu format menjadi string "YYYY-MM-DD"
         df_manual = pd.DataFrame([input_manual])
         df_manual["date_start"] = pd.to_datetime(df_manual["date_start"]).dt.strftime('%Y-%m-%d')
-        df_manual["tgl_kunjungan"] = pd.to_datetime(df_manual["tgl_kunjungan"]).dt.strftime('%Y-%m-%d')
-
-        
-        df_manual = pd.DataFrame([input_manual])
+    
+        # Pastikan kolom 'tgl_kunjungan' ada sebelum konversi
+        if "tgl_kunjungan" in df_manual.columns:
+            df_manual["tgl_kunjungan"] = pd.to_datetime(df_manual["tgl_kunjungan"]).dt.strftime('%Y-%m-%d')
+    
         st.success("Data manual tambahan berhasil ditambahkan!")
         st.dataframe(df_manual)
-        
+    
+        # Inisialisasi session_state jika belum ada
+        if "manual_data" not in st.session_state:
+            st.session_state["manual_data"] = pd.DataFrame()
+    
+        if "csv_data" not in st.session_state:
+            st.session_state["csv_data"] = pd.DataFrame()
+    
         # Update session_state manual_data dengan menambahkan data baru
         st.session_state["manual_data"] = pd.concat([st.session_state["manual_data"], df_manual], ignore_index=True)
+    
         # Gabungkan data CSV dan data manual menjadi data gabungan
         st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
+    
         st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
     
     # Tampilkan data gabungan jika sudah ada
