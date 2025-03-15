@@ -238,7 +238,7 @@ if nav == "🏠 Home":
     input_manual["age"] = st.number_input("Usia", min_value=0, step=1, value=0)
     input_manual["date_start"] = st.date_input("Tanggal Mulai", value=datetime.today())
 
-    submitted_manual = st.form_submit_button("Submit Data Manual Tambahan"))
+    submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
 
 
     
