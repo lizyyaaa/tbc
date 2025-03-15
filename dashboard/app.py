@@ -8,6 +8,8 @@ import plotly.express as px
 import plotly.io as pio  
 from PIL import Image
 import io
+from db_connector import get_connection
+import mysql.connector
 
 # 2) Atur tema Seaborn
 sns.set_theme(style="whitegrid")
@@ -880,3 +882,39 @@ elif nav == "📈 Visualisasi":
 
             
             st.sidebar.success("Visualisasi selesai ditampilkan!")
+            
+if st.button("Simpan Data Gabungan ke MySQL"):
+    if "data" in st.session_state and not st.session_state["data"].empty:
+        df_to_save = st.session_state["data"].copy()
+        # Format tanggal ke string jika diperlukan
+        if "date_start" in df_to_save.columns:
+            df_to_save["date_start"] = pd.to_datetime(df_to_save["date_start"], errors="coerce").dt.strftime('%Y-%m-%d')
+        if "tgl_kunjungan" in df_to_save.columns:
+            df_to_save["tgl_kunjungan"] = pd.to_datetime(df_to_save["tgl_kunjungan"], errors="coerce").dt.strftime('%Y-%m-%d')
+        try:
+            conn = get_connection()
+            if conn is None:
+                st.error("Koneksi ke database gagal!")
+            else:
+                cursor = conn.cursor()
+                # Ambil kolom sesuai fields_order
+                columns = [col for col in fields_order if col in df_to_save.columns]
+                df_to_save = df_to_save[columns]
+                
+                # Buat query INSERT tanpa kolom id (AUTO_INCREMENT)
+                placeholders = ", ".join(["%s"] * len(df_to_save.columns))
+                insert_query = f"INSERT INTO tb_cases ({', '.join(df_to_save.columns)}) VALUES ({placeholders})"
+                
+                data_rows = [tuple(x) for x in df_to_save.to_numpy()]
+                cursor.executemany(insert_query, data_rows)
+                conn.commit()
+                st.success("Data gabungan berhasil disimpan ke MySQL!")
+        except Exception as e:
+            st.error(f"Terjadi error saat menyimpan ke MySQL: {e}")
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+    else:
+        st.error("Tidak ada data untuk disimpan!")
