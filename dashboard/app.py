@@ -267,7 +267,7 @@ if nav == "🏠 Home":
     
             st.success("✅ Data manual tambahan berhasil ditambahkan!")
             st.dataframe(df_manual)
-            st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart."
+            st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
     
     # Tampilkan data gabungan jika sudah ada
     if not st.session_state["data"].empty:
