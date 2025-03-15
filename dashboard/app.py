@@ -220,25 +220,25 @@ if nav == "🏠 Home":
     st.markdown("## Form Input Data Manual Tambahan")
 
     with st.form(key="manual_form"):
-    input_manual = {}
-
-    # Pilih apakah dari daftar atau input manual
-    st.write("### Pilih Type TB:")
-    type_tb_selected = st.multiselect("Pilih jenis TB:", tb_options)
-
-    # Input manual jika pengguna ingin menulis sendiri jenis TB lain
-    type_tb_other = st.text_input("Masukkan jenis TB lainnya jika tidak ada dalam daftar:")
-
-    # Menyimpan hanya data yang diisi
-    if type_tb_selected or type_tb_other.strip():
-        input_manual["type_tb"] = type_tb_selected + ([type_tb_other] if type_tb_other.strip() else [])
-
-    # Input lainnya dalam form
-    input_manual["pasien"] = st.text_input("Nama Pasien", value="")
-    input_manual["age"] = st.number_input("Usia", min_value=0, step=1, value=0)
-    input_manual["date_start"] = st.date_input("Tanggal Mulai", value=datetime.today())
-
-    submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
+        input_manual = {}
+    
+        # Pilih apakah dari daftar atau input manual
+        st.write("### Pilih Type TB:")
+        type_tb_selected = st.multiselect("Pilih jenis TB:", tb_options)
+    
+        # Input manual jika pengguna ingin menulis sendiri jenis TB lain
+        type_tb_other = st.text_input("Masukkan jenis TB lainnya jika tidak ada dalam daftar:")
+    
+        # Menyimpan hanya data yang diisi
+        if type_tb_selected or type_tb_other.strip():
+            input_manual["type_tb"] = type_tb_selected + ([type_tb_other] if type_tb_other.strip() else [])
+    
+        # Input lainnya dalam form
+        input_manual["pasien"] = st.text_input("Nama Pasien", value="")
+        input_manual["age"] = st.number_input("Usia", min_value=0, step=1, value=0)
+        input_manual["date_start"] = st.date_input("Tanggal Mulai", value=datetime.today())
+    
+        submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
 
 
     
