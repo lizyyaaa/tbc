@@ -885,36 +885,46 @@ elif nav == "📈 Visualisasi":
             
 if st.button("Simpan Data Gabungan ke MySQL"):
     if "data" in st.session_state and not st.session_state["data"].empty:
+        # Copy data gabungan
         df_to_save = st.session_state["data"].copy()
-        # Format tanggal ke string jika diperlukan
+        # Format kolom tanggal jika ada
         if "date_start" in df_to_save.columns:
             df_to_save["date_start"] = pd.to_datetime(df_to_save["date_start"], errors="coerce").dt.strftime('%Y-%m-%d')
         if "tgl_kunjungan" in df_to_save.columns:
             df_to_save["tgl_kunjungan"] = pd.to_datetime(df_to_save["tgl_kunjungan"], errors="coerce").dt.strftime('%Y-%m-%d')
+        
+        # Inisialisasi variabel koneksi dan cursor
+        conn = None
+        cursor = None
+        
         try:
             conn = get_connection()
             if conn is None:
                 st.error("Koneksi ke database gagal!")
             else:
                 cursor = conn.cursor()
-                # Ambil kolom sesuai fields_order
+                # Pilih kolom yang sesuai dari fields_order yang juga ada di DataFrame
                 columns = [col for col in fields_order if col in df_to_save.columns]
                 df_to_save = df_to_save[columns]
                 
-                # Buat query INSERT tanpa kolom id (AUTO_INCREMENT)
+                # Buat query INSERT (kolom id tidak disertakan karena AUTO_INCREMENT)
                 placeholders = ", ".join(["%s"] * len(df_to_save.columns))
                 insert_query = f"INSERT INTO tb_cases ({', '.join(df_to_save.columns)}) VALUES ({placeholders})"
                 
+                # Konversi DataFrame ke list of tuples
                 data_rows = [tuple(x) for x in df_to_save.to_numpy()]
+                
+                # Eksekusi query dan commit
                 cursor.executemany(insert_query, data_rows)
                 conn.commit()
                 st.success("Data gabungan berhasil disimpan ke MySQL!")
         except Exception as e:
             st.error(f"Terjadi error saat menyimpan ke MySQL: {e}")
         finally:
-            if cursor:
+            # Pastikan cursor dan koneksi ditutup jika sudah dideklarasikan
+            if 'cursor' in locals() and cursor is not None:
                 cursor.close()
-            if conn:
+            if conn is not None:
                 conn.close()
     else:
         st.error("Tidak ada data untuk disimpan!")
