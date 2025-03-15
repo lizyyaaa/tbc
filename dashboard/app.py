@@ -219,38 +219,41 @@ if nav == "🏠 Home":
     
     st.markdown("## Form Input Data Manual Tambahan")
 
+    # Simpan pilihan pengguna untuk Type TB
+    if "type_tb_selected" not in st.session_state:
+        st.session_state["type_tb_selected"] = []
+    
+    # Pilih apakah dari daftar atau input manual
+    st.write("### Pilih Type TB:")
+    type_tb_selected = st.multiselect("Pilih jenis TB:", tb_options, default=st.session_state["type_tb_selected"])
+    
+    # Input manual jika pengguna ingin menulis sendiri jenis TB lain
+    type_tb_other = st.text_input("Masukkan jenis TB lainnya jika tidak ada dalam daftar:")
+    
+    # Simpan hasil pemilihan ke session_state sebelum form
+    st.session_state["type_tb_selected"] = type_tb_selected
+    
+    # Form dimulai di sini
     with st.form(key="manual_form"):
         input_manual = {}
     
-        # Pilih apakah dari daftar atau input manual
-        st.write("### Pilih Type TB:")
-        type_tb_selected = st.multiselect("Pilih jenis TB:", tb_options)
+        # Gunakan hasil dari multiselect & text input sebelumnya
+        if st.session_state["type_tb_selected"] or type_tb_other.strip():
+            input_manual["type_tb"] = st.session_state["type_tb_selected"] + ([type_tb_other] if type_tb_other.strip() else [])
     
-        # Input manual jika pengguna ingin menulis sendiri jenis TB lain
-        type_tb_other = st.text_input("Masukkan jenis TB lainnya jika tidak ada dalam daftar:")
-    
-        # Menyimpan hanya data yang diisi
-        if type_tb_selected or type_tb_other.strip():
-            input_manual["type_tb"] = type_tb_selected + ([type_tb_other] if type_tb_other.strip() else [])
-    
-        # Input lainnya dalam form
         input_manual["pasien"] = st.text_input("Nama Pasien", value="")
         input_manual["age"] = st.number_input("Usia", min_value=0, step=1, value=0)
         input_manual["date_start"] = st.date_input("Tanggal Mulai", value=datetime.today())
         input_manual["tgl_kunjungan"] = st.date_input("Tanggal Kunjungan", value=datetime.today())
     
-        # Tombol submit
+        # Tombol submit dalam form
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
     
     # Proses setelah submit
     if submitted_manual:
-        # Ubah nilai date_input menjadi pd.Timestamp, lalu format menjadi string "YYYY-MM-DD"
         df_manual = pd.DataFrame([input_manual])
         df_manual["date_start"] = pd.to_datetime(df_manual["date_start"]).dt.strftime('%Y-%m-%d')
-    
-        # Pastikan kolom 'tgl_kunjungan' ada sebelum konversi
-        if "tgl_kunjungan" in df_manual.columns:
-            df_manual["tgl_kunjungan"] = pd.to_datetime(df_manual["tgl_kunjungan"]).dt.strftime('%Y-%m-%d')
+        df_manual["tgl_kunjungan"] = pd.to_datetime(df_manual["tgl_kunjungan"]).dt.strftime('%Y-%m-%d')
     
         st.success("Data manual tambahan berhasil ditambahkan!")
         st.dataframe(df_manual)
@@ -269,11 +272,11 @@ if nav == "🏠 Home":
         st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
     
         st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
-    
-    # Tampilkan data gabungan jika sudah ada
-    if not st.session_state["data"].empty:
-        st.markdown("### Data Gabungan Saat Ini")
-        st.dataframe(st.session_state["data"])
+        
+        # Tampilkan data gabungan jika sudah ada
+        if not st.session_state["data"].empty:
+            st.markdown("### Data Gabungan Saat Ini")
+            st.dataframe(st.session_state["data"])
 
 
 # ================================
