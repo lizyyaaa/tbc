@@ -223,21 +223,20 @@ if nav == "🏠 Home":
     if "type_tb_selected" not in st.session_state:
         st.session_state["type_tb_selected"] = []
     
+    tb_options = option_dict["type_tb"]
+    
     # 🔹 Pilihan jenis TB dengan multiselect
     st.write("### Pilih Type TB:")
     type_tb_selected = st.multiselect("Pilih jenis TB:", tb_options, default=st.session_state.get("type_tb_selected", []))
     
-    # 🔹 Input manual jika pengguna ingin menambahkan jenis TB lain
     type_tb_other = st.text_input("Masukkan jenis TB lainnya jika tidak ada dalam daftar:")
     
-    # 🔹 Simpan hasil pemilihan ke session_state sebelum form
     st.session_state["type_tb_selected"] = type_tb_selected
     
     # ✅ Form untuk input tambahan
     with st.form(key="manual_form"):
         input_manual = {}
     
-        # Jika ada pilihan dari dropdown atau input manual, simpan
         input_manual["type_tb"] = st.session_state["type_tb_selected"][:]
         if type_tb_other.strip():
             input_manual["type_tb"].append(type_tb_other.strip())
@@ -247,10 +246,8 @@ if nav == "🏠 Home":
         input_manual["date_start"] = st.date_input("Tanggal Mulai", value=datetime.today())
         input_manual["tgl_kunjungan"] = st.date_input("Tanggal Kunjungan", value=datetime.today())
     
-        # ✅ Tambahkan tombol submit agar form bisa terkirim
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
     
-    # ✅ Proses setelah submit
     if submitted_manual:
         df_manual = pd.DataFrame([input_manual])
         df_manual["date_start"] = pd.to_datetime(df_manual["date_start"]).dt.strftime('%Y-%m-%d')
@@ -259,27 +256,20 @@ if nav == "🏠 Home":
         st.success("Data manual tambahan berhasil ditambahkan!")
         st.dataframe(df_manual)
     
-        # Inisialisasi session_state jika belum ada
         if "manual_data" not in st.session_state:
             st.session_state["manual_data"] = pd.DataFrame()
     
         if "csv_data" not in st.session_state:
             st.session_state["csv_data"] = pd.DataFrame()
     
-        # Update session_state manual_data dengan menambahkan data baru
         st.session_state["manual_data"] = pd.concat([st.session_state["manual_data"], df_manual], ignore_index=True)
-    
-        # Gabungkan data CSV dan data manual menjadi data gabungan
         st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
     
         st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
-        
-        # Tampilkan data gabungan jika sudah ada
+    
         if not st.session_state["data"].empty:
             st.markdown("### Data Gabungan Saat Ini")
             st.dataframe(st.session_state["data"])
-
-
 # ================================
 # Halaman Visualisasi
 # ================================
