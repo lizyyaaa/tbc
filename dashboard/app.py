@@ -24,10 +24,7 @@ if "data" not in st.session_state:
 else:
     st.session_state["data"] = st.session_state["data"].sort_index()
 
-# 2️⃣ Inisialisasi session_state untuk input manual
-if "input_manual" not in st.session_state:
-    st.session_state.input_manual = {}
-    
+
 # 3) Fungsi untuk menampilkan label kolom tanpa underscore
 def display_label(col_name: str) -> str:
     return " ".join(word.capitalize() for word in col_name.split("_"))
@@ -162,7 +159,7 @@ if nav == "🏠 Home":
                       'Pindrikan Kidul', 'Sumurejo', 'Terboyo Wetan', 'Muktiharjo Kidul', 'Pedurungan Lor', 'Kalicari', 
                       'Cabean', 'Karanganyar', 'Panggung Lor', 'Purwosari', 'Panggung Kidul', 'Bulu Lor', 'Plombokan', 
                       'Kaliwiru', 'Pangangan', 'Kalibanteng Kidul', 'Jrakah'],
-        "type_tb" : ['TB SO', 'TB RO', ''],
+        "type_tb": [1.0, 2.0],
         "status_hamil": ['Tidak', 'Ya'],
         "pekerjaan": ['Tidak Bekerja', 'Ibu Rumah Tangga', 'Pegawai Swasta', 'Lainnya', 'Pelajar / Mahasiswa', 
                       'Wiraswasta', 'Nelayan', 'Petani', 'Pensiunan', 'TNI / Polri'],
@@ -221,51 +218,46 @@ if nav == "🏠 Home":
     }
     
     st.markdown("## Form Input Data Manual Tambahan")
-
     with st.form(key="manual_form"):
         input_manual = {}
-    
         for col in fields_order:
-            label = col.replace("_", " ").title()
-    
+            label = col.replace("_", " ").title()  # Ganti dengan fungsi display_label jika ada
+            
+            # Kolom dengan tipe khusus
             if col == "pasien":
-                input_manual[col] = st.text_input(label, value=st.session_state["input_manual"].get(col, ""))
+                input_manual[col] = st.text_input(label, value="")
             elif col == "age":
-                input_manual[col] = st.number_input(label, min_value=0, step=1, value=st.session_state["input_manual"].get(col, 0))
+                input_manual[col] = st.number_input(label, min_value=0, step=1, value=0)
             elif col in ["date_start", "tgl_kunjungan"]:
-                input_manual[col] = st.date_input(label, value=st.session_state["input_manual"].get(col, datetime.today()))
+                input_manual[col] = st.date_input(label, value=datetime.today())
+            # Kolom yang memiliki opsi di option_dict
             elif col in option_dict:
-                # Radio button untuk memilih antara opsi dropdown atau input manual
-                pilihan_mode = st.radio(f"Pilih cara input {label}:", ["Pilih dari daftar", "Ketik sendiri"], 
-                                        index=0 if st.session_state["input_manual"].get(col, "") in option_dict[col] else 1)
-                
-                if pilihan_mode == "Pilih dari daftar":
-                    input_manual[col] = st.selectbox(label, option_dict[col], 
-                                                     index=option_dict[col].index(st.session_state["input_manual"].get(col, option_dict[col][0])) if st.session_state["input_manual"].get(col, "") in option_dict[col] else 0)
+                options = option_dict[col]
+                if options:
+                    input_manual[col] = st.selectbox(label, options)
                 else:
-                    input_manual[col] = st.text_input(f"Masukkan keterangan {label}:", value=st.session_state["input_manual"].get(col, ""))
+                    input_manual[col] = st.text_input(label, value="")
             else:
-                input_manual[col] = st.text_input(label, value=st.session_state["input_manual"].get(col, ""))
-    
+                # Kolom lainnya default ke text_input
+                input_manual[col] = st.text_input(label, value="")
+        
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
     
     if submitted_manual:
-        # Simpan input terbaru ke session_state
-        st.session_state["input_manual"] = input_manual.copy()
-    
-        # Konversi input ke DataFrame dan format tanggal
+        # Ubah nilai date_input menjadi pd.Timestamp, lalu format menjadi string "YYYY-MM-DD"
         df_manual = pd.DataFrame([input_manual])
         df_manual["date_start"] = pd.to_datetime(df_manual["date_start"]).dt.strftime('%Y-%m-%d')
         df_manual["tgl_kunjungan"] = pd.to_datetime(df_manual["tgl_kunjungan"]).dt.strftime('%Y-%m-%d')
-    
-        # Simpan data manual baru
-        st.session_state["manual_data"] = pd.concat([st.session_state["manual_data"], df_manual], ignore_index=True)
-    
-        # Gabungkan dengan data utama
-        st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
-    
-        st.success("✅ Data manual tambahan berhasil ditambahkan!")
+
+        
+        df_manual = pd.DataFrame([input_manual])
+        st.success("Data manual tambahan berhasil ditambahkan!")
         st.dataframe(df_manual)
+        
+        # Update session_state manual_data dengan menambahkan data baru
+        st.session_state["manual_data"] = pd.concat([st.session_state["manual_data"], df_manual], ignore_index=True)
+        # Gabungkan data CSV dan data manual menjadi data gabungan
+        st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
         st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
     
     # Tampilkan data gabungan jika sudah ada
@@ -289,19 +281,12 @@ elif nav == "📈 Visualisasi":
         # Preprocessing dasar: imputasi, hapus duplikasi, konversi tanggal
         kolom_numerik = df.select_dtypes(include=['number']).columns
         kolom_kategori = df.select_dtypes(include=['object']).columns
-        
-        # Imputasi untuk data kategorik dengan modus
         df[kolom_kategori] = df[kolom_kategori].apply(lambda x: x.fillna(x.mode()[0]))
-        
-        # Imputasi untuk data numerik dengan modus
-        df[kolom_numerik] = df[kolom_numerik].apply(lambda x: x.fillna(x.mode()[0] if not x.mode().empty else x))
-        
+        df[kolom_numerik] = df[kolom_numerik].apply(lambda x: x.fillna(x.mean()))
         df = df.drop_duplicates()
-        
         if "date_start" in df.columns:
             df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
             df["year_month"] = df["date_start"].dt.to_period("M").astype(str)
-
         
         # Definisi kategori untuk analisis skor
         kategori_rumah = [
@@ -434,8 +419,7 @@ elif nav == "📈 Visualisasi":
                 "📅 Tren Date Start Pasien",
                 "📊 Distribusi Usia",
                 "🟢 Status Gizi dan Imunisasi",
-                "🎯 Distribusi Pekerjaan",
-                "🏠 Rumah Tidak Layak vs Pekerjaan"
+                "🎯 Distribusi Pekerjaan"
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
@@ -885,50 +869,6 @@ elif nav == "📈 Visualisasi":
                 )
                 
                 st.plotly_chart(fig, use_container_width=True)
-                
-            elif pilihan == "🏠 Rumah Tidak Layak vs Pekerjaan (Crosstab)":
-                st.subheader("🏠 Rumah Tidak Layak vs Pekerjaan (Crosstab)")
-                
-                # Cek kolom 'pekerjaan' di dataframe utama
-                if "pekerjaan" not in df.columns:
-                    st.warning("Kolom 'pekerjaan' tidak ditemukan di dataframe utama.")
-                else:
-                    # Tampilkan beberapa baris untuk debugging
-                    st.write("Beberapa baris df:", df.head())
-                    st.write("Beberapa baris df_rumah:", df_rumah.head())
-                    
-                    # Pastikan kedua dataframe memiliki indeks yang sama (jika tidak, gunakan join berdasarkan kolom kunci yang sesuai)
-                    # Di sini kita gunakan intersection dari indeks
-                    common_index = df.index.intersection(df_rumah.index)
-                    st.write("Jumlah indeks yang sama:", len(common_index))
-                    
-                    if common_index.empty:
-                        st.warning("Tidak ada indeks yang sama antara df dan df_rumah. Pastikan kedua dataframe berasal dari data yang sama atau memiliki kolom kunci yang bisa digunakan untuk merge.")
-                    else:
-                        # Filter df hanya pada indeks yang sama
-                        df_common = df.loc[common_index].copy()
-                        
-                        # Join dengan kolom Label dari df_rumah (pastikan df_rumah memiliki Label yang benar)
-                        df_merge = df_common.join(df_rumah[['Label']], how="left")
-                        st.write("Data setelah join:", df_merge.head())
-                        
-                        # Tampilkan nilai unik dari Label untuk memastikan nilai yang ada
-                        st.write("Nilai unik Label:", df_merge["Label"].unique())
-                        
-                        # Filter baris yang memiliki Label "Tidak Layak"
-                        df_merge = df_merge[df_merge["Label"] == "Tidak Layak"]
-                        st.write("Jumlah baris dengan Label 'Tidak Layak':", df_merge.shape[0])
-                        
-                        if df_merge.empty:
-                            st.warning("Setelah join, tidak ada baris dengan Label 'Tidak Layak'. Periksa kembali proses pembuatan df_rumah dan pastikan Label telah dihitung dengan benar.")
-                        else:
-                            # Buat crosstab antara kolom 'pekerjaan' dan Label
-                            crosstab = pd.crosstab(df_merge["pekerjaan"], df_merge["Label"])
-                            st.write("Tabel Crosstab:", crosstab)
-
-
-
-
                         
 
             
