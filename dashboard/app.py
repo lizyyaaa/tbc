@@ -220,30 +220,31 @@ if nav == "🏠 Home":
     st.markdown("## Form Input Data Manual Tambahan")
     with st.form(key="manual_form"):
         input_manual = {}
+        
         for col in fields_order:
-            label = col.replace("_", " ").title()  # Ganti dengan fungsi display_label jika ada
+            label = col.replace("_", " ").title()  # Format label agar lebih rapi
     
-            # Kolom dengan tipe khusus
+            # Kolom khusus dengan tipe data tertentu
             if col == "pasien":
                 input_manual[col] = st.text_input(label, value="")
             elif col == "age":
                 input_manual[col] = st.number_input(label, min_value=0, step=1, value=0)
             elif col in ["date_start", "tgl_kunjungan"]:
                 input_manual[col] = st.date_input(label, value=datetime.today())
-            # Kolom yang memiliki opsi di option_dict
             elif col in option_dict:
-                if col == "type_tb":  # Menambahkan kasus khusus untuk type_tb
-                    type_tb_choice = st.selectbox(label, option_dict[col], key="type_tb_select")
-                    if type_tb_choice == "Lainnya":
-                        type_tb_other = st.text_input("Masukkan jenis TB lainnya:", key="type_tb_other")
-                        input_manual[col] = type_tb_other.strip() if type_tb_other.strip() else type_tb_choice
+                if col == "type_tb":  # Penanganan khusus untuk input manual
+                    type_tb_choice = st.radio(f"Pilih {label}:", ["Pilih dari daftar", "Input manual"], key="type_tb_mode")
+    
+                    if type_tb_choice == "Pilih dari daftar":
+                        type_tb_selected = st.selectbox("Pilih jenis TB", option_dict[col], key="type_tb_select")
+                        input_manual[col] = type_tb_selected
                     else:
-                        input_manual[col] = type_tb_choice
+                        type_tb_other = st.text_input("Masukkan jenis TB lainnya:", key="type_tb_other")
+                        input_manual[col] = type_tb_other.strip() if type_tb_other.strip() else "Lainnya"
                 else:
-                    options = option_dict[col]
-                    input_manual[col] = st.selectbox(label, options) if options else st.text_input(label, value="")
+                    input_manual[col] = st.selectbox(label, option_dict[col])
             else:
-                # Kolom lainnya default ke text_input
+                # Default ke text_input
                 input_manual[col] = st.text_input(label, value="")
     
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
