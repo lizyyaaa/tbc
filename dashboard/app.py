@@ -218,6 +218,7 @@ if nav == "🏠 Home":
     }
     
     st.markdown("## Form Input Data Manual Tambahan")
+
     with st.form(key="manual_form"):
         input_manual = {}
         
@@ -236,11 +237,9 @@ if nav == "🏠 Home":
                     type_tb_choice = st.radio(f"Pilih {label}:", ["Pilih dari daftar", "Input manual"], key="type_tb_mode")
     
                     if type_tb_choice == "Pilih dari daftar":
-                        type_tb_selected = st.selectbox("Pilih jenis TB", option_dict[col], key="type_tb_select")
-                        input_manual[col] = type_tb_selected
+                        input_manual[col] = st.selectbox("Pilih jenis TB", option_dict[col], key="type_tb_select")
                     else:
-                        type_tb_other = st.text_input("Masukkan jenis TB lainnya:", key="type_tb_other")
-                        input_manual[col] = type_tb_other.strip() if type_tb_other.strip() else "Lainnya"
+                        input_manual[col] = st.text_input("Masukkan jenis TB lainnya:", key="type_tb_other")
                 else:
                     input_manual[col] = st.selectbox(label, option_dict[col])
             else:
@@ -248,6 +247,7 @@ if nav == "🏠 Home":
                 input_manual[col] = st.text_input(label, value="")
     
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
+
 
     
     if submitted_manual:
