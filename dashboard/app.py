@@ -293,15 +293,6 @@ elif nav == "📈 Visualisasi":
         if "date_start" in df.columns:
             df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
             df["year_month"] = df["date_start"].dt.to_period("M").astype(str)
-        
-
-        # Hapus duplikasi
-        df = df.drop_duplicates()
-        
-        # Konversi tanggal jika kolom "date_start" ada
-        if "date_start" in df.columns:
-            df["date_start"] = pd.to_datetime(df["date_start"], errors="coerce")
-            df["year_month"] = df["date_start"].dt.to_period("M").astype(str)
 
         
         # Definisi kategori untuk analisis skor
