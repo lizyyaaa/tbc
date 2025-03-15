@@ -24,7 +24,10 @@ if "data" not in st.session_state:
 else:
     st.session_state["data"] = st.session_state["data"].sort_index()
 
-
+# 2️⃣ Inisialisasi session_state untuk input manual
+if "input_manual" not in st.session_state:
+    st.session_state.input_manual = {}
+    
 # 3) Fungsi untuk menampilkan label kolom tanpa underscore
 def display_label(col_name: str) -> str:
     return " ".join(word.capitalize() for word in col_name.split("_"))
@@ -218,56 +221,53 @@ if nav == "🏠 Home":
     }
     
     st.markdown("## Form Input Data Manual Tambahan")
+
     with st.form(key="manual_form"):
         input_manual = {}
-        for col in fields_order:
-            label = col.replace("_", " ").title()  # Ganti dengan fungsi display_label jika ada
     
-            # Kolom dengan tipe khusus
+        for col in fields_order:
+            label = col.replace("_", " ").title()
+    
             if col == "pasien":
-                input_manual[col] = st.text_input(label, value="")
+                input_manual[col] = st.text_input(label, value=st.session_state["input_manual"].get(col, ""))
             elif col == "age":
-                input_manual[col] = st.number_input(label, min_value=0, step=1, value=0)
+                input_manual[col] = st.number_input(label, min_value=0, step=1, value=st.session_state["input_manual"].get(col, 0))
             elif col in ["date_start", "tgl_kunjungan"]:
-                input_manual[col] = st.date_input(label, value=datetime.today())
-            # Kolom yang memiliki opsi di option_dict
+                input_manual[col] = st.date_input(label, value=st.session_state["input_manual"].get(col, datetime.today()))
             elif col in option_dict:
                 options = option_dict[col]
-                if options:
-                    # Khusus untuk type_tb, tambahkan opsi manual
-                    if col == "type_tb":
-                        pilihan_lainnya = st.selectbox(label, options + ["Lainnya (ketik sendiri)"])
-                        if pilihan_lainnya == "Lainnya (ketik sendiri)":
-                            input_manual[col] = st.text_input("Masukkan keterangan TB:", value="")
-                        else:
-                            input_manual[col] = pilihan_lainnya
-                    else:
-                        input_manual[col] = st.selectbox(label, options)
-                else:
-                    input_manual[col] = st.text_input(label, value="")
-            else:
-                # Kolom lainnya default ke text_input
-                input_manual[col] = st.text_input(label, value="")
-        
-        submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
-
     
-    if submitted_manual:
-        # Ubah nilai date_input menjadi pd.Timestamp, lalu format menjadi string "YYYY-MM-DD"
-        df_manual = pd.DataFrame([input_manual])
-        df_manual["date_start"] = pd.to_datetime(df_manual["date_start"]).dt.strftime('%Y-%m-%d')
-        df_manual["tgl_kunjungan"] = pd.to_datetime(df_manual["tgl_kunjungan"]).dt.strftime('%Y-%m-%d')
-
-        
-        df_manual = pd.DataFrame([input_manual])
-        st.success("Data manual tambahan berhasil ditambahkan!")
-        st.dataframe(df_manual)
-        
-        # Update session_state manual_data dengan menambahkan data baru
-        st.session_state["manual_data"] = pd.concat([st.session_state["manual_data"], df_manual], ignore_index=True)
-        # Gabungkan data CSV dan data manual menjadi data gabungan
-        st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
-        st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart.")
+                if col == "type_tb":
+                    pilihan_lainnya = st.selectbox(label, options + ["Lainnya (ketik sendiri)"])
+                    if pilihan_lainnya == "Lainnya (ketik sendiri)":
+                        input_manual[col] = st.text_input("Masukkan keterangan TB:", value=st.session_state["input_manual"].get(col, ""))
+                    else:
+                        input_manual[col] = pilihan_lainnya
+                else:
+                    input_manual[col] = st.selectbox(label, options)
+            else:
+                input_manual[col] = st.text_input(label, value=st.session_state["input_manual"].get(col, ""))
+    
+        submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
+    
+        if submitted_manual:
+            # Simpan input terbaru ke session_state untuk mempertahankan nilai yang telah diinput
+            st.session_state["input_manual"] = input_manual.copy()
+    
+            # Konversi input ke DataFrame dan format tanggal
+            df_manual = pd.DataFrame([input_manual])
+            df_manual["date_start"] = pd.to_datetime(df_manual["date_start"]).dt.strftime('%Y-%m-%d')
+            df_manual["tgl_kunjungan"] = pd.to_datetime(df_manual["tgl_kunjungan"]).dt.strftime('%Y-%m-%d')
+    
+            # Simpan data manual baru
+            st.session_state["manual_data"] = pd.concat([st.session_state["manual_data"], df_manual], ignore_index=True)
+    
+            # Gabungkan dengan data utama
+            st.session_state["data"] = pd.concat([st.session_state["csv_data"], st.session_state["manual_data"]], ignore_index=True)
+    
+            st.success("✅ Data manual tambahan berhasil ditambahkan!")
+            st.dataframe(df_manual)
+            st.info("Data gabungan telah disimpan. Buka halaman Visualisasi untuk melihat chart."
     
     # Tampilkan data gabungan jika sudah ada
     if not st.session_state["data"].empty:
