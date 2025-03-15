@@ -429,7 +429,7 @@ elif nav == "📈 Visualisasi":
                 "📊 Distribusi Usia",
                 "🟢 Status Gizi dan Imunisasi",
                 "🎯 Distribusi Pekerjaan",
-                "🛠️ Crosstab Sanitasi vs Pekerjaan"
+                "🏠 Tabel Crosstab Rumah Tidak Layak vs Pekerjaan"
             ]
             pilihan = st.selectbox("Pilih Visualisasi", visualisasi_list)
             
@@ -522,75 +522,24 @@ elif nav == "📈 Visualisasi":
                 # Tampilkan di Streamlit dengan fitur zoom, pan, dan download otomatis
                 st.plotly_chart(fig, use_container_width=True)
                 
-            elif pilihan == "🛠️ Crosstab Sanitasi vs Pekerjaan":
-                st.subheader("🛠️ Crosstab Sanitasi vs Pekerjaan")
-            
-                # Pastikan kolom "pekerjaan" ada di dataset
-                if "pekerjaan" in df.columns:
-                    df_sanitasi_with_pekerjaan = df_sanitasi.copy()
-                    df_sanitasi_with_pekerjaan["pekerjaan"] = df["pekerjaan"]
-            
-                    # Hitung Crosstab Sanitasi vs Pekerjaan
-                    crosstab_sanitasi = pd.crosstab(
-                        df_sanitasi_with_pekerjaan["pekerjaan"],
-                        df_sanitasi_with_pekerjaan["Sanitasi_Label"]
-                    )
-            
-                    # Tambahkan kolom Total dan persentase "Tidak Layak"
-                    crosstab_sanitasi["Total"] = crosstab_sanitasi.sum(axis=1)
-                    if "Tidak Layak" in crosstab_sanitasi.columns:
-                        crosstab_sanitasi["% Tidak Layak"] = (
-                            crosstab_sanitasi["Tidak Layak"] / crosstab_sanitasi["Total"]
-                        ) * 100
-                    
-                    # Tampilkan Crosstab di Streamlit
-                    st.write("### 🔹 Crosstab Sanitasi vs Pekerjaan")
-                    st.dataframe(crosstab_sanitasi)
-            
-                    # 🔥 Konversi ke format long untuk visualisasi
-                    crosstab_long = crosstab_sanitasi.reset_index().melt(
-                        id_vars=["pekerjaan"], var_name="Sanitasi_Label", value_name="Jumlah"
-                    )
-            
-                    # 🔹 **Plotly Heatmap untuk Crosstab**
-                    fig_heatmap = go.Figure(data=go.Heatmap(
-                        z=crosstab_sanitasi.iloc[:, :-2].values,  # Exclude 'Total' & '% Tidak Layak'
-                        x=crosstab_sanitasi.columns[:-2],  # Sanitasi Labels
-                        y=crosstab_sanitasi.index,  # Pekerjaan
-                        colorscale="Blues",
-                        text=crosstab_sanitasi.iloc[:, :-2].values,
-                        texttemplate="%{text}",
-                        hoverinfo="text"
-                    ))
-            
-                    fig_heatmap.update_layout(
-                        title="🔥 Heatmap Sanitasi vs Pekerjaan",
-                        xaxis_title="Sanitasi",
-                        yaxis_title="Pekerjaan",
-                        font=dict(size=12),
-                        width=900,
-                        height=500
-                    )
-            
-                    st.plotly_chart(fig_heatmap)
-            
-                    # 🔹 **Bar Chart untuk Perbandingan Sanitasi vs Pekerjaan**
-                    fig_bar = px.bar(
-                        crosstab_long,
-                        x="pekerjaan",
-                        y="Jumlah",
-                        color="Sanitasi_Label",
-                        text="Jumlah",
-                        title="📊 Distribusi Sanitasi vs Pekerjaan",
-                        labels={"pekerjaan": "Pekerjaan", "Jumlah": "Jumlah Kasus"},
-                        barmode="group",
-                    )
-            
-                    fig_bar.update_traces(textposition="outside")
-                    st.plotly_chart(fig_bar)
-            
-                else:
-                    st.warning("⚠️ Kolom 'pekerjaan' tidak ditemukan dalam dataset.")
+            elif pilihan == "🏠 Tabel Crosstab Rumah Tidak Layak vs Pekerjaan":
+                st.subheader("🏠 Tabel Crosstab Rumah Tidak Layak vs Pekerjaan")
+
+                # Ambil data 'pekerjaan' dari df untuk baris-baris yang terdapat di df_rumah (asumsi index cocok)
+                df_rumah_with_pekerjaan = df.loc[df_rumah.index, ["pekerjaan"]].copy()
+                # Tambahkan kolom indikator rumah (Label: Layak/Tidak Layak)
+                df_rumah_with_pekerjaan["Rumah_Label"] = df_rumah["Label"].values
+                
+                # Buat tabel crosstab untuk menghitung frekuensi tiap kategori pekerjaan berdasarkan label rumah
+                crosstab_counts = pd.crosstab(df_rumah_with_pekerjaan["pekerjaan"], df_rumah_with_pekerjaan["Rumah_Label"])
+                
+                # Hitung total tiap kategori pekerjaan dan persentase rumah "Tidak Layak"
+                crosstab_counts["Total"] = crosstab_counts.sum(axis=1)
+                if "Tidak Layak" in crosstab_counts.columns:
+                    crosstab_counts["% Tidak Layak"] = (crosstab_counts["Tidak Layak"] / crosstab_counts["Total"]) * 100
+                
+                st.dataframe(crosstab_counts)
+
 
     
             elif pilihan == "🏠 Rumah Layak & Tidak Layak (Chart + Detail)":
