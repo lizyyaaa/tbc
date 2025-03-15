@@ -222,7 +222,7 @@ if nav == "🏠 Home":
         input_manual = {}
         for col in fields_order:
             label = col.replace("_", " ").title()  # Ganti dengan fungsi display_label jika ada
-            
+    
             # Kolom dengan tipe khusus
             if col == "pasien":
                 input_manual[col] = st.text_input(label, value="")
@@ -231,7 +231,7 @@ if nav == "🏠 Home":
             elif col in ["date_start", "tgl_kunjungan"]:
                 input_manual[col] = st.date_input(label, value=datetime.today())
             # Kolom yang memiliki opsi di option_dict
-           elif col in option_dict:
+            elif col in option_dict:
                 options = option_dict[col]
                 if options:
                     # Khusus untuk type_tb, tambahkan opsi manual
@@ -250,6 +250,7 @@ if nav == "🏠 Home":
                 input_manual[col] = st.text_input(label, value="")
         
         submitted_manual = st.form_submit_button("Submit Data Manual Tambahan")
+
     
     if submitted_manual:
         # Ubah nilai date_input menjadi pd.Timestamp, lalu format menjadi string "YYYY-MM-DD"
